@@ -53,7 +53,6 @@ trait JsonSupport extends CirceEncoders {
     implicit def setCanBeSerialized[T](implicit cbs: CanBeSerialized[T]): CanBeSerialized[Set[T]]       = null
     implicit def optionCanBeSerialized[T](implicit cbs: CanBeSerialized[T]): CanBeSerialized[Option[T]] = null
   }
-
 }
 
 trait CacheSupport {
