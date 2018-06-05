@@ -7,3 +7,5 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
 addSbtPlugin("com.heroku" % "sbt-heroku" % "2.0.0")
 
 addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.12")
+
+addSbtPlugin("org.ensime" % "sbt-ensime" % "2.5.1")

@@ -9,3 +9,5 @@ target/
 .DS_Store
 application.conf
 data/
+.ensime
+.ensime_cache/
