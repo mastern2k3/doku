@@ -1,50 +1,70 @@
 package com.kaizoku.doku.documents
 
-import javax.ws.rs.Path
+import javax.ws.rs.{Path => JPath}
 
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.kaizoku.doku.common.api.RoutesSupport
 import com.kaizoku.doku.version.BuildInfo._
 import io.circe.generic.auto._
 import io.swagger.annotations.{ApiResponse, _}
-import java.nio.file.{Path => _}
+import java.nio.file._
+import java.nio.file.attribute._
 import scala.io.Source._
 
 import scala.annotation.meta.field
 
+class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] {
+
+  def foreach[U](f: ((Path, BasicFileAttributes)) => U): Unit = {
+
+    class Visitor extends SimpleFileVisitor[Path] {
+
+      override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult =
+        try {
+          f(file, attrs)
+          FileVisitResult.CONTINUE
+        } catch {
+          case _: Throwable => FileVisitResult.TERMINATE
+        }
+    }
+
+    Files.walkFileTree(path, new Visitor)
+  }
+}
+
 trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
-  implicit val versionJsonCbs = CanBeSerialized[DocumentInfoJson]
+  implicit val documentJsonCbs = CanBeSerialized[Array[DocumentInfoJson]]
 
-  val versionRoutes = pathPrefix("docs") {
+  val allFiles = getAllFiles("C:\\Users\\Nitzanz\\Dropbox\\Projects")
+
+  val documentsRoutes = pathPrefix("docs") {
     pathEndOrSingleSlash {
-      getVersion
+      getAllDocs
     }
   }
 
-  def getVersion: Route =
-    complete {
-      DocumentInfoJson(buildSha.substring(0, 6), buildDate)
-    }
+  def getAllDocs: Route = allFiles match {
+    case Left(msg) => complete(StatusCodes.Forbidden, msg.getMessage)
+    case Right(docs) =>
+      complete(
+        docs
+          .filter(isMdFile)
+          .map(p => DocumentInfoJson(p.toString(), p.getFileName().toString()))
+          .toArray[DocumentInfoJson]
+      )
+  }
 
   def isMdFile(file: Path): Boolean = file.getFileName.toString.toLowerCase.endsWith(".md")
 
-  def allMdFiles(rootFolder: String): Either[Throwable, Seq[Path]] = {
-
-    var files = Seq[Path]()
-
+  def getAllFiles(rootFolder: String): Either[Throwable, Seq[Path]] =
     try {
-      Files.walkFileTree(Paths.get(rootFolder), (f: Path) => {
-
-        FileVisitResult.CONTINUE;
-      })
+      return Right(new TraversePath(Paths.get(rootFolder)).map(_._1).toSeq)
     } catch {
-      case t: Throwable => return Left(t)
+      case t: Throwable => Left(t)
     }
-
-    Right(files)
-  }
 }
 
 @Api(
@@ -52,21 +72,21 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
   produces = "application/json",
   consumes = "application/json"
 )
-@Path("api/docs")
+@JPath("api/docs")
 trait DocumentsRoutesAnnotations {
 
   @ApiOperation(
     httpMethod = "GET",
-    response = classOf[DocumentInfoJson],
+    response = classOf[Array[DocumentInfoJson]],
     value = "Returns an object which describes running version"
   )
   @ApiResponses(
     Array(
       new ApiResponse(code = 500, message = "Internal Server Error"),
-      new ApiResponse(code = 200, message = "OK", response = classOf[DocumentInfoJson])
+      new ApiResponse(code = 200, message = "OK", response = classOf[Array[DocumentInfoJson]])
     )
   )
-  @Path("/")
+  @JPath("/")
   def getVersion: Route
 }
 
