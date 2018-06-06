@@ -4,6 +4,7 @@ import java.util.UUID
 import java.util.regex.Pattern
 import java.nio.file._
 import java.nio.file.attribute._
+import java.nio.charset.StandardCharsets
 import javax.ws.rs.{Path => JPath}
 
 import scala.io.Source._
@@ -38,7 +39,8 @@ class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] 
 
 trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
-  implicit val documentJsonCbs = CanBeSerialized[Array[DocumentInfoJson]]
+  implicit val documentJsonCbs      = CanBeSerialized[DocumentInfoJson]
+  implicit val documentArrayJsonCbs = CanBeSerialized[Array[DocumentInfoJson]]
 
   val docsRootFolder = "C:\\Users\\Nitzanz\\Dropbox\\Projects"
 
@@ -47,14 +49,36 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
   val documentsRoutes = pathPrefix("docs") {
     pathEndOrSingleSlash {
       getAllDocs
-    }
+    } ~
+      pathPrefix(Segment.repeat(1, separator = Slash)) { str =>
+        pathEndOrSingleSlash {
+          allFiles
+            .map(_.filter(isMdFile))
+            .map(_.map(pathToDocumentJson))
+            .map(_.head) match {
+            case Right(doc) => complete(doc)
+            case Left(msg)  => complete(StatusCodes.Forbidden, msg.getMessage)
+          }
+          // complete("lol you thought you'll find " + str.head)
+        } ~
+          path("raw") {
+            complete(wholeFile("C:\\Users\\Nitzanz\\Dropbox\\Projects\\036_doku\\tasks.md"))
+          }
+      }
   }
+
+  def wholeFile(path: String): Either[Throwable, String] =
+    try {
+      Right(new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8));
+    } catch {
+      case t: Throwable => Left(t)
+    }
 
   def pathToDocumentJson(path: Path): DocumentInfoJson = {
 
     val relPath = path.toString.replaceFirst("^" + Pattern.quote(docsRootFolder), "").replace("\\", "/");
 
-    DocumentInfoJson(UUID.randomUUID, path.getFileName.toString, relPath)
+    DocumentInfoJson(UUID.randomUUID.toString, path.getFileName.toString, relPath)
   }
 
   def getAllDocs: Route = allFiles match {
@@ -72,7 +96,7 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
   def getAllFiles(rootFolder: String): Either[Throwable, Seq[Path]] =
     try {
-      return Right(new TraversePath(Paths.get(rootFolder)).map(_._1).toSeq)
+      Right(new TraversePath(Paths.get(rootFolder)).map(_._1).toSeq)
     } catch {
       case t: Throwable => Left(t)
     }
@@ -103,7 +127,7 @@ trait DocumentsRoutesAnnotations {
 
 @ApiModel(description = "Metadata about a document")
 case class DocumentInfoJson(
-    @(ApiModelProperty @field)(value = "Document id") id: UUID,
+    @(ApiModelProperty @field)(value = "Document id") id: String,
     @(ApiModelProperty @field)(value = "Document name") name: String,
     @(ApiModelProperty @field)(value = "Document path") path: String
 )

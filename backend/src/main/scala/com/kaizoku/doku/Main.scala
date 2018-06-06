@@ -40,6 +40,7 @@ class Main() extends StrictLogging {
 }
 
 object Main extends App with StrictLogging {
+
   val (startFuture, bl) = new Main().start()
 
   val host = bl.config.serverHost

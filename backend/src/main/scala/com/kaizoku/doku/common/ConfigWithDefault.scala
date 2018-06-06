@@ -26,5 +26,4 @@ trait ConfigWithDefault {
     } else {
       default
     }
-
 }
