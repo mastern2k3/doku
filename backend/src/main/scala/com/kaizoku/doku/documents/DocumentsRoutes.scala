@@ -39,8 +39,7 @@ class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] 
 
 trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
-  implicit val documentJsonCbs      = CanBeSerialized[DocumentInfoJson]
-  implicit val documentArrayJsonCbs = CanBeSerialized[Array[DocumentInfoJson]]
+  implicit val documentJsonCbs = CanBeSerialized[DocumentInfoJson]
 
   val docsRootFolder = "C:\\Users\\Nitzanz\\Dropbox\\Projects"
 
@@ -48,24 +47,21 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
   val documentsRoutes = pathPrefix("docs") {
     pathEndOrSingleSlash {
-      getAllDocs
+      allDocuments
     } ~
       pathPrefix(Segment.repeat(1, separator = Slash)) { str =>
         pathEndOrSingleSlash {
-          allFiles
-            .map(_.filter(isMdFile))
-            .map(_.map(pathToDocumentJson))
-            .map(_.head) match {
-            case Right(doc) => complete(doc)
-            case Left(msg)  => complete(StatusCodes.Forbidden, msg.getMessage)
-          }
-          // complete("lol you thought you'll find " + str.head)
+          complete(
+            allFiles.map(_.filter(isMdFile).map(pathToDocumentJson).head)
+          )
         } ~
           path("raw") {
             complete(wholeFile("C:\\Users\\Nitzanz\\Dropbox\\Projects\\036_doku\\tasks.md"))
           }
       }
   }
+
+  def allDocuments = complete(allFiles.map(_.filter(isMdFile).map(pathToDocumentJson).toList))
 
   def wholeFile(path: String): Either[Throwable, String] =
     try {
@@ -79,17 +75,6 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
     val relPath = path.toString.replaceFirst("^" + Pattern.quote(docsRootFolder), "").replace("\\", "/");
 
     DocumentInfoJson(UUID.randomUUID.toString, path.getFileName.toString, relPath)
-  }
-
-  def getAllDocs: Route = allFiles match {
-    case Right(docs) =>
-      complete(
-        docs
-          .filter(isMdFile)
-          .map(pathToDocumentJson)
-          .toArray[DocumentInfoJson]
-      )
-    case Left(msg) => complete(StatusCodes.Forbidden, msg.getMessage)
   }
 
   def isMdFile(file: Path): Boolean = file.getFileName.toString.toLowerCase.endsWith(".md")
@@ -112,17 +97,17 @@ trait DocumentsRoutesAnnotations {
 
   @ApiOperation(
     httpMethod = "GET",
-    response = classOf[Array[DocumentInfoJson]],
+    response = classOf[List[DocumentInfoJson]],
     value = "Returns an object which describes running version"
   )
   @ApiResponses(
     Array(
       new ApiResponse(code = 500, message = "Internal Server Error"),
-      new ApiResponse(code = 200, message = "OK", response = classOf[Array[DocumentInfoJson]])
+      new ApiResponse(code = 200, message = "OK", response = classOf[List[DocumentInfoJson]])
     )
   )
   @JPath("/")
-  def getAllDocs: Route
+  def allDocuments: Route
 }
 
 @ApiModel(description = "Metadata about a document")
