@@ -40,7 +40,7 @@ import DocumentDetails.DocumentBody
 trait DocumentDetails {
   def id: DocumentId
   def name: String
-  def path: String
+  def path: List[String]
 }
 
 trait DocumentProvider {
@@ -53,7 +53,7 @@ trait DocumentProvider {
 case class LocalFileDocumentDetails(
     override val id: DocumentId,
     override val name: String,
-    override val path: String,
+    override val path: List[String],
     val localPath: Path
 ) extends DocumentDetails
 
@@ -90,9 +90,14 @@ class LocalDirectoryDocumentProvider(rootPath: String) extends DocumentProvider 
 
   def pathToDocumentDetails(path: Path) = {
 
-    val relPath = path.toString.replaceFirst("^" + Pattern.quote(rootPath), "").replace("\\", "/");
+    val relPath = path.getParent.toString.replaceFirst("^" + Pattern.quote(rootPath) + "\\\\", "").replace("\\", "/");
 
-    LocalFileDocumentDetails(UUID.randomUUID.toString, path.getFileName.toString, relPath, path)
+    LocalFileDocumentDetails(
+      UUID.randomUUID.toString,
+      path.getFileName.toString,
+      relPath.split("/").toList,
+      path
+    )
   }
 
   def isMdFile(file: Path): Boolean = file.getFileName.toString.toLowerCase.endsWith(".md")

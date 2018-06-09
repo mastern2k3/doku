@@ -39,6 +39,11 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
         } ~
           path("raw") {
             complete(provider.getBody(str.head))
+          } ~
+          path("save") {
+            post {
+              complete("lol")
+            }
           }
       }
   }
@@ -73,5 +78,5 @@ trait DocumentsRoutesAnnotations {
 case class DocumentInfoJson(
     @(ApiModelProperty @field)(value = "Document id") id: String,
     @(ApiModelProperty @field)(value = "Document name") name: String,
-    @(ApiModelProperty @field)(value = "Document path") path: String
+    @(ApiModelProperty @field)(value = "Document path") path: List[String]
 )

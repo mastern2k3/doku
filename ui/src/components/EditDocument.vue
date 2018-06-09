@@ -1,7 +1,8 @@
 <template>
   <div class="hello">
     <h1>{{ metadata.name }}</h1>
-    <h3>{{ metadata.path }}</h3>
+    <h3>/ {{ metadata.path.join(" / ") }}</h3>
+    <button v-on:click="save">Save</button>
     <div id="codeEditor" ref="codeEditor">
     </div>
   </div>
@@ -23,6 +24,15 @@ export default {
       metadata: {}
     }
   },
+  methods: {
+    save: function () {
+      axios.post(`/api/docs/${this.$route.params.docId}/save`, { data: this.cmInstance.getValue() })
+        .then(response => {
+          alert('Saved!')
+        })
+        .catch(console.error)
+    }
+  },
   created () {
     axios.get(`/api/docs/${this.$route.params.docId}`)
       .then(response => {
@@ -32,7 +42,7 @@ export default {
     axios.get(`/api/docs/${this.$route.params.docId}/raw`)
       .then(response => {
         this.document = response.data
-        CodeMirror(this.$refs.codeEditor, {
+        this.cmInstance = CodeMirror(this.$refs.codeEditor, {
           lineNumbers: true,
           value: this.document,
           mode: 'gfm',
@@ -62,4 +72,29 @@ a {
 .CodeMirror {
   height: auto;
 }
+
+.CodeMirror .cm-header-1 {
+  font-size: 2.5em;
+}
+
+.CodeMirror .cm-header-2 {
+  font-size: 2em;
+}
+
+.CodeMirror .cm-header-3 {
+  font-size: 1.5em;
+}
+
+.CodeMirror .cm-header-4 {
+  font-size: 1.4em;
+}
+
+.CodeMirror .cm-header-5 {
+  font-size: 1.2em;
+}
+
+.CodeMirror .cm-property + .cm-variable-2  {
+  text-decoration: line-through;
+}
+
 </style>
