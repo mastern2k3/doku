@@ -46,8 +46,12 @@ trait DocumentDetails {
 trait DocumentProvider {
 
   def get(docId: DocumentId): Future[DocumentDetails]
+
   def getAll: Future[List[DocumentDetails]]
+
   def getBody(docId: DocumentId): Future[DocumentBody]
+
+  def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit]
 }
 
 case class LocalFileDocumentDetails(
@@ -109,12 +113,22 @@ class LocalDirectoryDocumentProvider(rootPath: String) extends DocumentProvider 
       case t: Throwable => Left(t)
     }
 
+  def _get(docId: DocumentId) = glue(allDocuments.map(_.find(_.id == docId))).flatMap(glue2)
+
   def get(docId: DocumentId): Future[DocumentDetails] =
-    glue(allDocuments.map(_.find(_.id == docId))).flatMap(glue2)
+    _get(docId) //glue(allDocuments.map(_.find(_.id == docId))).flatMap(glue2)
 
   def getAll: Future[List[DocumentDetails]] =
     glue(allDocuments)
 
   def getBody(docId: DocumentId): Future[DocumentBody] =
     glue(allDocuments.map(_.find(_.id == docId).map(lf => wholeFile(lf.localPath))).flatMap(op2ei).joinRight)
+
+  def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit] =
+    _get(docId).flatMap(
+      details =>
+        Future {
+          Files.write(details.localPath, newBody.getBytes(StandardCharsets.UTF_8))
+      }
+    )
 }

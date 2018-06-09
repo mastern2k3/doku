@@ -12,6 +12,7 @@ import scala.annotation.meta.field
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import akka.util.ByteString
 import io.circe.generic.auto._
 import io.swagger.annotations.{ApiResponse, _}
 
@@ -42,7 +43,9 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
           } ~
           path("save") {
             post {
-              complete("lol")
+              entity(as[String]) { newBody =>
+                complete(provider.saveBody(str.head, newBody).map(f => "ok"))
+              }
             }
           }
       }

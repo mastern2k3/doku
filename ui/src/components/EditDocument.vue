@@ -26,7 +26,7 @@ export default {
   },
   methods: {
     save: function () {
-      axios.post(`/api/docs/${this.$route.params.docId}/save`, { data: this.cmInstance.getValue() })
+      axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cmInstance.getValue())
         .then(response => {
           alert('Saved!')
         })
