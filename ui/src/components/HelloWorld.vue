@@ -3,9 +3,9 @@
     <img src="../assets/logo.png">
     <h1>{{ msg }}</h1>
     <ul>
-        <li v-bind:key="file.id" v-for="file of files">
-            <router-link :to="'/doc/' + file.id">{{file.name}}</router-link> <small>{{file.path}}</small>
-        </li>
+      <li v-bind:key="file.id" v-for="file of files">
+        <router-link :to="'/doc/' + file.id">{{file.name}}</router-link> <small>{{file.path}}</small>
+      </li>
     </ul>
   </div>
 </template>
@@ -35,17 +35,21 @@ export default {
 h1, h2 {
   font-weight: normal;
 }
+
 small {
-    font-size: 0.7em;
+  font-size: 0.7em;
 }
+
 ul {
-    text-align: left;
+  text-align: left;
   list-style-type: none;
   padding: 0;
 }
+
 li {
   margin: 0 10px;
 }
+
 a {
   color: #42b983;
 }
