@@ -7,8 +7,7 @@ import java.nio.file.attribute._
 import java.nio.charset.StandardCharsets
 import javax.ws.rs.{Path => JPath}
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] {
 
@@ -43,7 +42,7 @@ trait DocumentDetails {
   def path: List[String]
 }
 
-trait DocumentProvider {
+trait DocumentService {
 
   def get(docId: DocumentId): Future[DocumentDetails]
 
@@ -61,7 +60,7 @@ case class LocalFileDocumentDetails(
     val localPath: Path
 ) extends DocumentDetails
 
-class LocalDirectoryDocumentProvider(rootPath: String) extends DocumentProvider {
+class LocalDirectoryDocumentProvider(rootPath: String)(implicit ec: ExecutionContext) extends DocumentService {
 
   val allFiles = getAllFiles(rootPath)
 

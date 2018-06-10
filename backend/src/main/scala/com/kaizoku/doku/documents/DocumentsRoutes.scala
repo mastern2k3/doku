@@ -25,7 +25,7 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
   implicit val documentJsonCbs = CanBeSerialized[DocumentInfoJson]
 
-  val provider: DocumentProvider = new LocalDirectoryDocumentProvider("C:\\Users\\Nitzan\\Dropbox\\Projects")
+  def documentService: DocumentService
 
   def detailsToDocumentJson(details: DocumentDetails): DocumentInfoJson =
     DocumentInfoJson(details.id, details.name, details.path)
@@ -36,22 +36,22 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
     } ~
       pathPrefix(Segment.repeat(1, separator = Slash)) { str =>
         pathEndOrSingleSlash {
-          complete(provider.get(str.head).map(detailsToDocumentJson))
+          complete(documentService.get(str.head).map(detailsToDocumentJson))
         } ~
           path("raw") {
-            complete(provider.getBody(str.head))
+            complete(documentService.getBody(str.head))
           } ~
           path("save") {
             post {
               entity(as[String]) { newBody =>
-                complete(provider.saveBody(str.head, newBody).map(f => "ok"))
+                complete(documentService.saveBody(str.head, newBody).map(f => "ok"))
               }
             }
           }
       }
   }
 
-  def allDocuments: Route = complete(provider.getAll.map(_.map(detailsToDocumentJson)))
+  def allDocuments: Route = complete(documentService.getAll.map(_.map(detailsToDocumentJson)))
 }
 
 @Api(

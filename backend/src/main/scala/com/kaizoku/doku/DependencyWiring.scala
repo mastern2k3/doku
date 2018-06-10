@@ -6,10 +6,12 @@ import com.kaizoku.doku.common.sql.{DatabaseConfig, SqlDatabase}
 import com.kaizoku.doku.email.application.{DummyEmailService, EmailConfig, EmailTemplatingEngine, SmtpEmailService}
 import com.kaizoku.doku.passwordreset.application.{PasswordResetCodeDao, PasswordResetConfig, PasswordResetService}
 import com.kaizoku.doku.user.application.{RefreshTokenStorageImpl, RememberMeTokenDao, UserDao, UserService}
+import com.kaizoku.doku.documents.LocalDirectoryDocumentProvider
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.StrictLogging
 
 trait DependencyWiring extends StrictLogging {
+
   def system: ActorSystem
 
   lazy val config = new PasswordResetConfig with EmailConfig with DatabaseConfig with ServerConfig with CryptoConfig {
@@ -54,6 +56,9 @@ trait DependencyWiring extends StrictLogging {
     config,
     passwordHashing
   )(serviceExecutionContext)
+
+  lazy val documentService =
+    new LocalDirectoryDocumentProvider("C:\\Users\\Nitzan\\Dropbox\\Projects")(serviceExecutionContext)
 
   lazy val refreshTokenStorage = new RefreshTokenStorageImpl(rememberMeTokenDao, system)(serviceExecutionContext)
 }
