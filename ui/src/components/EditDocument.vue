@@ -52,8 +52,7 @@ export default {
       return Array.from(Object.values(this.gdata.tags).reduce((acc, arr) => { arr.forEach(acc.add.bind(acc)); return acc }, new Set()))
     },
     handleTagsInLine: function (tags, lineNumber) {
-      this.gdata.tags[lineNumber] = tags
-      this.$forceUpdate()
+      this.$set(this.gdata.tags, lineNumber, tags)
     },
     save: function () {
       axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cm.getValue())
@@ -103,8 +102,8 @@ export default {
 </script>
 
 <style scoped>
-.doctag {
-  margin-right: 0.3em;
+.doctag + .doctag {
+  margin-left: 0.3em;
 }
 
 h3 {
