@@ -2,7 +2,9 @@
   <div class="hello">
     <h1>{{ metadata.name }}</h1>
     <h3>/ {{ metadata.path.join(" / ") }}</h3>
-    <ul><li v-bind:key="tag" v-for="tag of docTags()">#{{tag}}</li></ul>
+    <h5>
+      <span href="#" v-bind:key="tag" v-for="tag of docTags()" class="doctag badge badge-primary">#{{tag}}</span>
+    </h5>
     <button v-on:click="save">Save</button>
     <div id="codeEditor" ref="codeEditor">
     </div>
@@ -54,7 +56,7 @@ export default {
       this.$forceUpdate()
     },
     save: function () {
-      axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cmInstance.getValue())
+      axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cm.getValue())
         .then(response => {
           alert('Saved!')
         })
@@ -101,6 +103,10 @@ export default {
 </script>
 
 <style scoped>
+.doctag {
+  margin-right: 0.3em;
+}
+
 h3 {
   color: #677d92;
 }
