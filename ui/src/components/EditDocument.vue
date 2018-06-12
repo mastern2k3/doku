@@ -3,21 +3,34 @@
     <h1>{{ metadata.name }}</h1>
     <h3>/ {{ metadata.path.join(" / ") }}</h3>
     <h5>
-      <span href="#" v-bind:key="tag" v-for="tag of docTags()" class="doctag badge badge-primary">#{{tag}}</span>
+      <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
     </h5>
     <button v-on:click="save">Save</button>
     <div id="codeEditor" ref="codeEditor">
+    </div>
+    <div id="message">
+      <div style="padding: 5px;">
+        <div id="inner-message" class="alert alert-success alert-dismissible fade" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+  <span aria-hidden="true">&times;</span>
+</button>
+          Saved!
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import _ from 'lodash'
 import axios from 'axios'
 import CodeMirror from 'codemirror-minified'
 
 import 'codemirror-minified/lib/codemirror.css'
 import 'codemirror-minified/theme/neo.css'
 import 'codemirror-minified/mode/gfm/gfm'
+
+$('.alert').alert()
 
 function getTags (text) {
   var re = /[^\n#]#([a-zA-Z_-]+)/g
@@ -42,27 +55,37 @@ export default {
     return {
       document: '',
       metadata: {},
-      gdata: {
-        tags: {}
-      }
+      plugins: {}
+    }
+  },
+  computed: {
+    docTags: function () {
+      if (!this.plugins.tags) return {}
+      const committed = _.flatten(_.values(this.plugins.tags.committed))
+      const staged = _.flatten(_.values(this.plugins.tags.staged))
+
+      const removed = _.difference(committed, staged)
+      const added = _.difference(staged, committed)
+      const unchanged = _.intersection(staged, committed)
+      console.log({ added: added, removed: removed, unchanged: unchanged })
+      return { added: added, removed: removed, unchanged: unchanged }
     }
   },
   methods: {
-    docTags: function () {
-      return Array.from(Object.values(this.gdata.tags).reduce((acc, arr) => { arr.forEach(acc.add.bind(acc)); return acc }, new Set()))
-    },
-    handleTagsInLine: function (tags, lineNumber) {
-      this.$set(this.gdata.tags, lineNumber, tags)
-    },
     save: function () {
       axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cm.getValue())
         .then(response => {
-          alert('Saved!')
+          $('#inner-message').addClass('show')
+          setTimeout(() => {
+            $('#inner-message').removeClass('show')
+          }, 2000)
         })
         .catch(console.error)
     }
   },
   created () {
+    _.defer(axios.post, `/api/docs/${this.$route.params.docId}/visit`)
+
     axios.get(`/api/docs/${this.$route.params.docId}`)
       .then(response => {
         this.metadata = response.data
@@ -74,6 +97,11 @@ export default {
       .then(response => {
         this.document = response.data
 
+        const self = this
+        CodeMirror.commands.save = function (insance) {
+          self.save()
+        }
+
         this.cm = CodeMirror(this.$refs.codeEditor, {
           lineNumbers: true,
           lineWrapping: true,
@@ -82,25 +110,25 @@ export default {
           theme: 'neo'
         })
 
-        var self_ = this
-
         this.cm.on('changes', (cm, changes) => {
           changes.forEach(change => {
             cm.eachLine(change.from.line, change.to.line + 1, handle => {
               const tags = getTags(handle.text)
-              if (tags) {
-                self_.handleTagsInLine(tags, handle.lineNo())
-              }
+              if (_.isEmpty(tags)) return
+              this.$set(this.plugins.tags.staged, handle.lineNo(), tags)
             })
           })
         })
 
-        setTimeout(() => this.cm.eachLine(handle => {
-          const tags = getTags(handle.text)
-          if (tags) {
-            self_.handleTagsInLine(tags, handle.lineNo())
-          }
-        }), 0)
+        _.defer(() => {
+          const committed = {}
+          this.cm.eachLine(handle => {
+            const tags = getTags(handle.text)
+            if (_.isEmpty(tags)) return
+            committed[handle.lineNo()] = tags
+          })
+          this.$set(this.plugins, 'tags', { committed: committed, staged: _.cloneDeep(committed) })
+        })
       })
       .catch(console.error)
   }
@@ -116,12 +144,23 @@ h3 {
   color: #677d92;
 }
 
+.badge.badge-danger {
+  text-decoration: line-through;
+}
+
 #codeEditor {
   text-align: left;
 }
 
-a {
-  color: #42b983;
+#message {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 999;
+}
+
+#inner-message {
+  margin: 0 auto;
 }
 </style>
 
