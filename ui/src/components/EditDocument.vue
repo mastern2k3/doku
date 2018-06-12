@@ -2,6 +2,9 @@
   <div class="hello">
     <h1>{{ metadata.name }}</h1>
     <h3>/ {{ metadata.path.join(" / ") }}</h3>
+    <h5>
+      <span href="#" v-bind:key="tag" v-for="tag of docTags()" class="doctag badge badge-primary">#{{tag}}</span>
+    </h5>
     <button v-on:click="save">Save</button>
     <div id="codeEditor" ref="codeEditor">
     </div>
@@ -16,17 +19,43 @@ import 'codemirror-minified/lib/codemirror.css'
 import 'codemirror-minified/theme/neo.css'
 import 'codemirror-minified/mode/gfm/gfm'
 
+function getTags (text) {
+  var re = /[^\n#]#([a-zA-Z_-]+)/g
+  var m
+
+  var tags = []
+
+  do {
+    m = re.exec(text)
+
+    if (m) {
+      tags.push(m[1])
+    }
+  } while (m)
+
+  return tags
+}
+
 export default {
   name: 'EditDocument',
   data () {
     return {
       document: '',
-      metadata: {}
+      metadata: {},
+      gdata: {
+        tags: {}
+      }
     }
   },
   methods: {
+    docTags: function () {
+      return Array.from(Object.values(this.gdata.tags).reduce((acc, arr) => { arr.forEach(acc.add.bind(acc)); return acc }, new Set()))
+    },
+    handleTagsInLine: function (tags, lineNumber) {
+      this.$set(this.gdata.tags, lineNumber, tags)
+    },
     save: function () {
-      axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cmInstance.getValue())
+      axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cm.getValue())
         .then(response => {
           alert('Saved!')
         })
@@ -45,7 +74,7 @@ export default {
       .then(response => {
         this.document = response.data
 
-        this.cmInstance = CodeMirror(this.$refs.codeEditor, {
+        this.cm = CodeMirror(this.$refs.codeEditor, {
           lineNumbers: true,
           lineWrapping: true,
           value: this.document,
@@ -53,13 +82,25 @@ export default {
           theme: 'neo'
         })
 
-        this.cmInstance.on('changes', (cm, changes) => {
+        var self_ = this
+
+        this.cm.on('changes', (cm, changes) => {
           changes.forEach(change => {
             cm.eachLine(change.from.line, change.to.line + 1, handle => {
-              console.log(handle.text)
+              const tags = getTags(handle.text)
+              if (tags) {
+                self_.handleTagsInLine(tags, handle.lineNo())
+              }
             })
           })
         })
+
+        setTimeout(() => this.cm.eachLine(handle => {
+          const tags = getTags(handle.text)
+          if (tags) {
+            self_.handleTagsInLine(tags, handle.lineNo())
+          }
+        }), 0)
       })
       .catch(console.error)
   }
@@ -67,6 +108,10 @@ export default {
 </script>
 
 <style scoped>
+.doctag + .doctag {
+  margin-left: 0.3em;
+}
+
 h3 {
   color: #677d92;
 }
