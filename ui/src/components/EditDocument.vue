@@ -37,16 +37,28 @@ export default {
     axios.get(`/api/docs/${this.$route.params.docId}`)
       .then(response => {
         this.metadata = response.data
+        document.title = this.metadata.name
       })
       .catch(console.error)
+
     axios.get(`/api/docs/${this.$route.params.docId}/raw`)
       .then(response => {
         this.document = response.data
+
         this.cmInstance = CodeMirror(this.$refs.codeEditor, {
           lineNumbers: true,
+          lineWrapping: true,
           value: this.document,
           mode: 'gfm',
           theme: 'neo'
+        })
+
+        this.cmInstance.on('changes', (cm, changes) => {
+          changes.forEach(change => {
+            cm.eachLine(change.from.line, change.to.line + 1, handle => {
+              console.log(handle.text)
+            })
+          })
         })
       })
       .catch(console.error)
@@ -97,4 +109,8 @@ a {
   text-decoration: line-through;
 }
 
+.CodeMirror-cursor {
+  border-left: 1px solid black !important;
+  background: rgba(0,0,0,0) !important;
+}
 </style>

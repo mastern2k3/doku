@@ -58,7 +58,7 @@ trait DependencyWiring extends StrictLogging {
   )(serviceExecutionContext)
 
   lazy val documentService =
-    new LocalDirectoryDocumentProvider("C:\\Users\\Nitzan\\Dropbox\\Projects")(serviceExecutionContext)
+    new LocalDirectoryDocumentProvider("C:\\Users\\Nitzanz\\Dropbox\\Projects")(serviceExecutionContext)
 
   lazy val refreshTokenStorage = new RefreshTokenStorageImpl(rememberMeTokenDao, system)(serviceExecutionContext)
 }
