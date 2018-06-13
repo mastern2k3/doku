@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ metadata.name }}</h1>
-    <h3>/ {{ metadata.path.join(" / ") }}</h3>
+    <h3 class="text-muted">/ {{ metadata.path.join(" / ") }}</h3>
     <h5>
       <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
     </h5>
@@ -61,13 +61,14 @@ export default {
   computed: {
     docTags: function () {
       if (!this.plugins.tags) return {}
-      const committed = _.flatten(_.values(this.plugins.tags.committed))
-      const staged = _.flatten(_.values(this.plugins.tags.staged))
+
+      const committed = _.uniq(_.flatten(_.values(this.plugins.tags.committed)))
+      const staged = _.uniq(_.flatten(_.values(this.plugins.tags.staged)))
 
       const removed = _.difference(committed, staged)
       const added = _.difference(staged, committed)
       const unchanged = _.intersection(staged, committed)
-      console.log({ added: added, removed: removed, unchanged: unchanged })
+
       return { added: added, removed: removed, unchanged: unchanged }
     }
   },
@@ -113,9 +114,7 @@ export default {
         this.cm.on('changes', (cm, changes) => {
           changes.forEach(change => {
             cm.eachLine(change.from.line, change.to.line + 1, handle => {
-              const tags = getTags(handle.text)
-              if (_.isEmpty(tags)) return
-              this.$set(this.plugins.tags.staged, handle.lineNo(), tags)
+              this.$set(this.plugins.tags.staged, handle.lineNo(), getTags(handle.text))
             })
           })
         })
@@ -138,10 +137,6 @@ export default {
 <style scoped>
 .doctag + .doctag {
   margin-left: 0.3em;
-}
-
-h3 {
-  color: #677d92;
 }
 
 .badge.badge-danger {
