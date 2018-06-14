@@ -114,7 +114,13 @@ export default {
         this.cm.on('changes', (cm, changes) => {
           changes.forEach(change => {
             cm.eachLine(change.from.line, change.to.line + 1, handle => {
-              this.$set(this.plugins.tags.staged, handle.lineNo(), getTags(handle.text))
+              if (!(handle.lineNo() in this.plugins.tags.staged)) {
+                this.$set(this.plugins.tags.staged, handle.lineNo(), getTags(handle.text))
+              } else {
+                if (!_.isEqual(this.plugins.tags.staged[handle.lineNo()], getTags(handle.text))) {
+                  this.plugins.tags.staged[handle.lineNo()] = getTags(handle.text)
+                }
+              }
             })
           })
         })
