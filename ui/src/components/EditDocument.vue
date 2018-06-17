@@ -94,7 +94,7 @@ export default {
     axios.get(`/api/docs/${this.$route.params.docId}`)
       .then(response => {
         this.metadata = response.data
-        document.title = `${this.metadata.name} @ ${this.metadata.path.join('/')}`
+        document.title = this.metadata.name
       })
       .catch(console.error)
 

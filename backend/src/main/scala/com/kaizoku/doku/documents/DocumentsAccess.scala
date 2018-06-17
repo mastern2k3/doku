@@ -5,7 +5,6 @@ import java.util.regex.Pattern
 import java.nio.file._
 import java.nio.file.attribute._
 import java.nio.charset.StandardCharsets
-import javax.ws.rs.{Path => JPath}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -30,14 +29,6 @@ class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] 
     Files.walkFileTree(path, new Visitor)
   }
 }
-
-object DocumentDetails {
-  type DocumentId   = String
-  type DocumentBody = String
-}
-
-import DocumentDetails.DocumentId
-import DocumentDetails.DocumentBody
 
 trait DocumentDetails {
   def id: DocumentId
