@@ -1,12 +1,19 @@
 <template>
-  <div class="hello">
+  <div class="hello container">
     <img src="../assets/logo.png">
     <h1>{{ msg }}</h1>
-    <ul>
-      <li v-bind:key="file.id" v-for="file of files">
-        <router-link :to="'/doc/' + file.id">{{file.name}}</router-link> <small>{{file.path}}</small>
-      </li>
-    </ul>
+    <div class="card-columns">
+      <div class="card" v-bind:key="file.id" v-for="file of files">
+        <div class="card-header">
+          <h5>{{file.name}}</h5>
+          <a href="http://google.com" class="doctag badge badge-primary">#some_tag</a> <a href="http://google.com" class="doctag badge badge-primary">#pin</a>
+        </div>
+        <div class="card-body">
+          <router-link :to="'/doc/' + file.id" class="card-link">Edit</router-link>
+          <a href="#" class="card-link">Another link</a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

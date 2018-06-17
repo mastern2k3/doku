@@ -28,7 +28,7 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
   def documentService: DocumentService
 
   def detailsToDocumentJson(details: DocumentDetails): DocumentInfoJson =
-    DocumentInfoJson(details.id, details.name, details.path)
+    DocumentInfoJson(details.id, details.name)
 
   val documentsRoutes = pathPrefix("docs") {
     pathEndOrSingleSlash {
@@ -44,7 +44,7 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
           path("save") {
             post {
               entity(as[String]) { newBody =>
-                complete(documentService.saveBody(str.head, newBody).map(f => "ok"))
+                complete(documentService.saveBody(str.head, newBody).map(_ => StatusCodes.OK))
               }
             }
           }
@@ -80,6 +80,5 @@ trait DocumentsRoutesAnnotations {
 @ApiModel(description = "Metadata about a document")
 case class DocumentInfoJson(
     @(ApiModelProperty @field)(value = "Document id") id: String,
-    @(ApiModelProperty @field)(value = "Document name") name: String,
-    @(ApiModelProperty @field)(value = "Document path") path: List[String]
+    @(ApiModelProperty @field)(value = "Document name") name: String
 )

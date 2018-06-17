@@ -1,8 +1,8 @@
 <template>
   <div class="hello">
     <h1>{{ metadata.name }}</h1>
-    <h3 class="text-muted">/ {{ metadata.path.join(" / ") }}</h3>
-    <h5>
+    <h3 v-if="metadata.path" class="text-muted">/ {{ metadata.path.join(" / ") }}</h3>
+    <h5 v-if="docTags">
       <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
     </h5>
     <button v-on:click="save">Save</button>
@@ -74,8 +74,12 @@ export default {
   },
   methods: {
     save: function () {
+      const saveTimeGeneration = this.cm.changeGeneration()
+
       axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cm.getValue())
         .then(response => {
+          this.cleanGeneration = saveTimeGeneration
+          
           $('#inner-message').addClass('show')
           setTimeout(() => {
             $('#inner-message').removeClass('show')
@@ -110,6 +114,18 @@ export default {
           mode: 'gfm',
           theme: 'neo'
         })
+
+        this.cleanGeneration = this.cm.changeGeneration()
+
+        window.onbeforeunload = function (e) {
+          if (!self.cm.isClean(self.cleanGeneration)) {
+            const dialogText = 'You have some unsaved changes. Click "Save" or press "Ctrl-S" in order to save your changes.'
+            e.returnValue = dialogText
+            return dialogText
+          }
+
+          return null
+        }
 
         this.cm.on('changes', (cm, changes) => {
           changes.forEach(change => {
