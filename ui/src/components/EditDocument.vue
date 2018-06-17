@@ -60,7 +60,7 @@ export default {
   },
   computed: {
     docTags: function () {
-      if (!this.plugins.tags) return {}
+      if (!this.plugins.tags) return null
 
       const committed = _.uniq(_.flatten(_.values(this.plugins.tags.committed)))
       const staged = _.uniq(_.flatten(_.values(this.plugins.tags.staged)))
@@ -79,7 +79,7 @@ export default {
       axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cm.getValue())
         .then(response => {
           this.cleanGeneration = saveTimeGeneration
-          
+
           $('#inner-message').addClass('show')
           setTimeout(() => {
             $('#inner-message').removeClass('show')

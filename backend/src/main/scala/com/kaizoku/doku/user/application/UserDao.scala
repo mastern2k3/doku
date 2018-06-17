@@ -77,5 +77,4 @@ trait SqlUserSchema {
     def basic = (id, login, email, createdOn) <> ((BasicUserData.apply _).tupled, BasicUserData.unapply)
     // format: ON
   }
-
 }

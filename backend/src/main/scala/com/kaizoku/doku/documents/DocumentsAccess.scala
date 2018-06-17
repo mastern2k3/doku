@@ -86,37 +86,28 @@ class LocalDirectoryDocumentProvider(rootPath: String)(implicit ec: ExecutionCon
     extends DocumentService
     with DocumentProvider {
 
-  def uniqueName = "local"
+  private def getAllFiles(rootFolder: String) = Future(new TraversePath(Paths.get(rootFolder)).map(_._1).toList)
 
-  def status =
-    allFiles.value match {
-      case Some(Success(_)) => OkStatus()
-      case Some(Failure(e)) => ErrorStatus(e)
-      case None             => InitStatus()
-    }
+  private val allFiles = getAllFiles(rootPath)
 
-  def getAllFiles(rootFolder: String) = Future(new TraversePath(Paths.get(rootFolder)).map(_._1).toList)
+  private val allDocuments = allFiles.map(_.filter(isMdFile).map(pathToDocumentDetails).toList)
 
-  val allFiles = getAllFiles(rootPath)
-
-  val allDocuments = allFiles.map(_.filter(isMdFile).map(pathToDocumentDetails).toList)
-
-  def wholeFile(path: Path): Future[String] =
+  private def wholeFile(path: Path): Future[String] =
     Future(new String(Files.readAllBytes(path), StandardCharsets.UTF_8))
 
-  def glue2[A](e: Option[A]): Future[A] =
+  private def glue2[A](e: Option[A]): Future[A] =
     e match {
       case Some(item) => Future { item }
       case None       => Future.failed(new Exception("Entity not found"))
     }
 
-  def op2ei[A](e: Option[A]): Try[A] =
+  private def op2ei[A](e: Option[A]): Try[A] =
     e match {
       case Some(item) => Success(item)
       case None       => Failure(new Exception("Entity not found"))
     }
 
-  def pathToDocumentDetails(path: Path) = {
+  private def pathToDocumentDetails(path: Path) = {
 
     val relPath = path.getParent.toString.replaceFirst("^" + Pattern.quote(rootPath) + "\\\\", "").replace("\\", "/");
 
@@ -127,9 +118,18 @@ class LocalDirectoryDocumentProvider(rootPath: String)(implicit ec: ExecutionCon
     )
   }
 
-  def isMdFile(file: Path): Boolean = file.getFileName.toString.toLowerCase.endsWith(".md")
+  private def isMdFile(file: Path): Boolean = file.getFileName.toString.toLowerCase.endsWith(".md")
 
-  def internalGet(docId: DocumentId) = allDocuments.map(_.find(_.id == docId)).flatMap(glue2)
+  private def internalGet(docId: DocumentId) = allDocuments.map(_.find(_.id == docId)).flatMap(glue2)
+
+  def uniqueName = "local"
+
+  def status =
+    allFiles.value match {
+      case Some(Success(_)) => OkStatus()
+      case Some(Failure(e)) => ErrorStatus(e)
+      case None             => InitStatus()
+    }
 
   def get(docId: DocumentId) = internalGet(docId)
 
