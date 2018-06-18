@@ -17,6 +17,7 @@ import io.circe.generic.auto._
 import io.swagger.annotations.{ApiResponse, _}
 
 import com.kaizoku.doku.common.api.RoutesSupport
+import com.kaizoku.doku.common.FutureHelpers._
 import com.kaizoku.doku.version.BuildInfo._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,7 +45,7 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
           path("save") {
             post {
               entity(as[String]) { newBody =>
-                complete(documentService.saveBody(str.head, newBody).map(_ => StatusCodes.OK))
+                complete(documentService.saveBody(str.head, newBody).mapToOk)
               }
             }
           }

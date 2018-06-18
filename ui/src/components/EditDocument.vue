@@ -18,6 +18,16 @@
         </div>
       </div>
     </div>
+    <div id="message-danger">
+      <div style="padding: 5px;">
+        <div id="inner-message-danger" class="alert alert-danger alert-dismissible fade" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+  <span aria-hidden="true">&times;</span>
+</button>
+          Error while saving :(
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -85,7 +95,12 @@ export default {
             $('#inner-message').removeClass('show')
           }, 2000)
         })
-        .catch(console.error)
+        .catch(e => {
+
+          $('#inner-message-danger').addClass('show')
+
+          console.error(e)
+        })
     }
   },
   created () {
@@ -177,6 +192,17 @@ export default {
 }
 
 #inner-message {
+  margin: 0 auto;
+}
+
+#message-danger {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 999;
+}
+
+#inner-message-danger {
   margin: 0 auto;
 }
 </style>

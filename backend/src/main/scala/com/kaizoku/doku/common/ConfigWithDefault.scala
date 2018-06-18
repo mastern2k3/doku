@@ -21,9 +21,5 @@ trait ConfigWithDefault {
     if (rootConfig.hasPath(path)) get(rootConfig) else default
 
   private def getOptional[T](fullPath: String, default: Option[T] = None)(get: Config => T) =
-    if (rootConfig.hasPath(fullPath)) {
-      Some(get(rootConfig))
-    } else {
-      default
-    }
+    if (rootConfig.hasPath(fullPath)) Some(get(rootConfig)) else default
 }

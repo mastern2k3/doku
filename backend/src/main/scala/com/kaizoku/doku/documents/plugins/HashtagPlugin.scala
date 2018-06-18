@@ -1,16 +1,22 @@
 package com.kaizoku.doku.documents.plugins
 
-import scala.concurrent.Future
-import org.h2.mvstore._
+import java.time.OffsetDateTime
 
+import scala.concurrent.Future
+import io.circe.Json
+
+import com.kaizoku.doku.common.sql.SqlDatabase
 import com.kaizoku.doku.documents._
 
-class HashtagPlugin extends TypedDocumentPlugin[MapData] {
+class HashtagPlugin extends DocumentPlugin {
 
   def uniqueName = "hashtag"
 
-  val jew = MVStore.open("koklol")
-
-  def process(doc: DocumentDetails, body: DocumentBody, metadata: Option[MapData]): Future[Option[MapData]] =
+  def process(
+      doc: DocumentDetails,
+      body: DocumentBody,
+      metadata: Option[PluginMetadata],
+      mention: Option[PluginMention]
+  ): Future[Option[PluginMetadata]] =
     Future.successful(metadata)
 }
