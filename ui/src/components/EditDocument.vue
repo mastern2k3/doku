@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div style="text-align: center;">
     <h1>{{ metadata.name }}</h1>
     <h3 v-if="metadata.path" class="text-muted">/ {{ metadata.path.join(" / ") }}</h3>
     <h5 v-if="docTags">
@@ -96,7 +96,6 @@ export default {
           }, 2000)
         })
         .catch(e => {
-
           $('#inner-message-danger').addClass('show')
 
           console.error(e)
