@@ -10,6 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 import com.kaizoku.doku.documents.sources.Base64Url
+import com.kaizoku.doku.documents.plugins.PluginService
 
 class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] {
 
@@ -73,7 +74,10 @@ case class LocalFileDocumentDetails(
     val localPath: Path
 ) extends DocumentDetails
 
-class LocalDirectoryDocumentProvider(rootPath: String)(implicit ec: ExecutionContext)
+class LocalDirectoryDocumentProvider(
+    rootPath: String,
+    pluginService: PluginService
+)(implicit ec: ExecutionContext)
     extends DocumentService
     with DocumentProvider {
 
@@ -86,9 +90,9 @@ class LocalDirectoryDocumentProvider(rootPath: String)(implicit ec: ExecutionCon
   private def wholeFile(path: Path): Future[String] =
     Future(new String(Files.readAllBytes(path), StandardCharsets.UTF_8))
 
-  private def glue2[A](e: Option[A]): Future[A] =
+  private def failNotFound[A](e: Option[A]): Future[A] =
     e match {
-      case Some(item) => Future { item }
+      case Some(item) => Future.successful(item)
       case None       => Future.failed(new Exception("Entity not found"))
     }
 
@@ -111,7 +115,7 @@ class LocalDirectoryDocumentProvider(rootPath: String)(implicit ec: ExecutionCon
 
   private def isMdFile(file: Path): Boolean = file.getFileName.toString.toLowerCase.endsWith(".md")
 
-  private def internalGet(docId: DocumentId) = allDocuments.map(_.find(_.id == docId)).flatMap(glue2)
+  private def internalGet(docId: DocumentId) = allDocuments.map(_.find(_.id == docId)).flatMap(failNotFound)
 
   def uniqueName = "local"
 
@@ -130,6 +134,10 @@ class LocalDirectoryDocumentProvider(rootPath: String)(implicit ec: ExecutionCon
 
   def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit] =
     internalGet(docId).flatMap(
-      details => Future { Files.write(details.localPath, newBody.getBytes(StandardCharsets.UTF_8)) }
+      details =>
+        for {
+          _ <- pluginService.process(details, newBody)
+          _ <- Future(Files.write(details.localPath, newBody.getBytes(StandardCharsets.UTF_8)))
+        } yield Unit
     )
 }

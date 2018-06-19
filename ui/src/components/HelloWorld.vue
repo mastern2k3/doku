@@ -11,14 +11,16 @@
     </div>
     <div class="row">
       <div class="col form-group">
-        <input v-model="searchText" type="text" class="form-control" placeholder="Search">
+        <input v-model="searchText" type="text" class="form-control" placeholder="Search" autofocus>
       </div>
     </div>
     <div class="card-columns">
-      <div class="card card-document" v-bind:key="file.id" v-for="file of filterSeach(files)">
+      <div class="card card-document" v-for="file of filterSeach(files)" v-bind:key="file.id">
         <div class="card-header">
           <h5>{{file.name}}</h5>
-          <a href="http://google.com" class="doctag badge badge-primary">#some_tag</a> <a href="http://google.com" class="doctag badge badge-primary">#pin</a>
+          <div v-if="file.metadata && file.metadata.hashtags && file.metadata.hashtags.tags">
+            <a v-for="tag in file.metadata.hashtags.tags" v-bind:key="tag" href="http://google.com" class="doctag badge badge-primary">#{{tag}}</a>
+          </div>
         </div>
         <div class="card-body">
           <router-link :to="'/doc/' + file.id" class="card-link">Edit</router-link>

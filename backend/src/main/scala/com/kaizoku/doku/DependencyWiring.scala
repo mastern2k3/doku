@@ -6,6 +6,7 @@ import com.kaizoku.doku.common.sql.{DatabaseConfig, SqlDatabase}
 import com.kaizoku.doku.email.application.{DummyEmailService, EmailConfig, EmailTemplatingEngine, SmtpEmailService}
 import com.kaizoku.doku.passwordreset.application.{PasswordResetCodeDao, PasswordResetConfig, PasswordResetService}
 import com.kaizoku.doku.user.application.{RefreshTokenStorageImpl, RememberMeTokenDao, UserDao, UserService}
+import com.kaizoku.doku.documents.plugins.{HashtagPlugin, PluginMetadataDao, PluginService}
 import com.kaizoku.doku.documents.LocalDirectoryDocumentProvider
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.StrictLogging
@@ -27,6 +28,8 @@ trait DependencyWiring extends StrictLogging {
   lazy val codeDao = new PasswordResetCodeDao(sqlDatabase)(daoExecutionContext)
 
   lazy val rememberMeTokenDao = new RememberMeTokenDao(sqlDatabase)(daoExecutionContext)
+
+  lazy val pluginDao = new PluginMetadataDao(sqlDatabase)(daoExecutionContext)
 
   lazy val sqlDatabase = SqlDatabase.create(config)
 
@@ -57,8 +60,14 @@ trait DependencyWiring extends StrictLogging {
     passwordHashing
   )(serviceExecutionContext)
 
+  lazy val plugins = List(
+    new HashtagPlugin
+  )
+
+  lazy val pluginService = new PluginService(pluginDao, plugins)(serviceExecutionContext)
+
   lazy val documentService =
-    new LocalDirectoryDocumentProvider("C:\\Users\\Nitzanz\\Dropbox\\Projects")(serviceExecutionContext)
+    new LocalDirectoryDocumentProvider("C:\\Users\\Nitzanz\\Dropbox\\Projects", pluginService)(serviceExecutionContext)
 
   lazy val refreshTokenStorage = new RefreshTokenStorageImpl(rememberMeTokenDao, system)(serviceExecutionContext)
 }

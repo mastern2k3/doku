@@ -19,7 +19,9 @@ import io.swagger.annotations.{ApiResponse, _}
 import com.kaizoku.doku.common.api.RoutesSupport
 import com.kaizoku.doku.common.FutureHelpers._
 import com.kaizoku.doku.version.BuildInfo._
+import com.kaizoku.doku.documents.plugins.{PluginMetadata, PluginService}
 
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
@@ -27,9 +29,10 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
   implicit val documentJsonCbs = CanBeSerialized[DocumentInfoJson]
 
   def documentService: DocumentService
+  def pluginService: PluginService
 
-  def detailsToDocumentJson(details: DocumentDetails): DocumentInfoJson =
-    DocumentInfoJson(details.id, details.name)
+  def detailsMetadataToJson(details: DocumentDetails, metadata: Option[PluginMetadata]): DocumentInfoJson =
+    DocumentInfoJson(details.id, details.name, metadata)
 
   val documentsRoutes = pathPrefix("docs") {
     pathEndOrSingleSlash {
@@ -37,7 +40,10 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
     } ~
       pathPrefix(Segment.repeat(1, separator = Slash)) { str =>
         pathEndOrSingleSlash {
-          complete(documentService.get(str.head).map(detailsToDocumentJson))
+          complete(for {
+            det      <- documentService.get(str.head)
+            metadata <- pluginService.get(det.id)
+          } yield detailsMetadataToJson(det, metadata))
         } ~
           path("raw") {
             complete(documentService.getBody(str.head))
@@ -52,7 +58,13 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
       }
   }
 
-  def allDocuments: Route = complete(documentService.getAll.map(_.map(detailsToDocumentJson)))
+  def allDocuments: Route =
+    complete(
+      documentService.getAll
+        .map(all => Future.sequence(all.map(d => pluginService.get(d.id).map((d, _)))))
+        .flatten
+        .map(_.map(t => detailsMetadataToJson(t._1, t._2)))
+    )
 }
 
 @Api(
@@ -81,5 +93,6 @@ trait DocumentsRoutesAnnotations {
 @ApiModel(description = "Metadata about a document")
 case class DocumentInfoJson(
     @(ApiModelProperty @field)(value = "Document id") id: String,
-    @(ApiModelProperty @field)(value = "Document name") name: String
+    @(ApiModelProperty @field)(value = "Document name") name: String,
+    @(ApiModelProperty @field)(value = "Plugin metadata") metadata: Option[PluginMetadata]
 )
