@@ -1,4 +1,4 @@
-package com.kaizoku.doku.documents.plugins
+package com.kaizoku.doku.documents.plugins.impl
 
 import java.time.OffsetDateTime
 
@@ -8,8 +8,11 @@ import io.circe.{Json, JsonObject}
 
 import com.kaizoku.doku.common.sql.SqlDatabase
 import com.kaizoku.doku.documents._
+import com.kaizoku.doku.documents.plugins._
 
 class HashtagPlugin extends DocumentPlugin with StrictLogging {
+
+  val hashtag = raw"(?m)[^\n#]#([a-zA-Z_-]+)".r
 
   def uniqueName = "hashtag"
 
@@ -23,7 +26,15 @@ class HashtagPlugin extends DocumentPlugin with StrictLogging {
       Some(
         metadata
           .getOrElse(JsonObject.empty)
-          .add("tags", Json.arr(Json.fromString("lol"), Json.fromString("top"), Json.fromString("pin")))
+          .add(
+            "tags",
+            Json.fromValues(
+              hashtag
+                .findAllMatchIn(body)
+                .map(m => Json.fromString(m.group(1).toLowerCase))
+                .toIterable
+            )
+          )
       )
     )
 }

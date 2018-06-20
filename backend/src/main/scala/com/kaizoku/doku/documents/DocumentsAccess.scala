@@ -5,6 +5,7 @@ import java.util.regex.Pattern
 import java.nio.file._
 import java.nio.file.attribute._
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -102,13 +103,17 @@ class LocalDirectoryDocumentProvider(
       case None       => Failure(new Exception("Entity not found"))
     }
 
+  private def md5(s: String) = MessageDigest.getInstance("MD5").digest(s.getBytes)
+
   private def pathToDocumentDetails(path: Path) = {
 
     val relPath = path.getParent.toString.replaceFirst("^" + Pattern.quote(rootPath) + "\\\\", "").replace("\\", "/");
 
+    val hintName = (relPath.split("/") :+ (path.getFileName.toString)).mkString(".")
+
     LocalFileDocumentDetails(
-      Base64Url.encode(UUID.randomUUID),
-      (relPath.split("/") :+ (path.getFileName.toString)).mkString("."),
+      Base64Url.encode(md5(hintName)),
+      hintName,
       path
     )
   }
