@@ -12,7 +12,7 @@ import com.kaizoku.doku.documents.plugins._
 
 class HashtagPlugin extends DocumentPlugin with StrictLogging {
 
-  val hashtag = raw"(?m)[^\n#]#([a-zA-Z_-]+)".r
+  val hashtag = raw"(?m)[^\n\S#]#([a-zA-Z_-]+)".r
 
   def uniqueName = "hashtag"
 

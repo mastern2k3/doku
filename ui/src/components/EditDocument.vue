@@ -1,11 +1,23 @@
 <template>
+  <div>
+  <nav class="navbar sticky-top navbar-dark bg-dark">
+    <a class="navbar-brand" href="/">
+      <img class="logo" src="../assets/logo.png">
+      Doku
+    </a>
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" v-on:click="save">Save</a>
+      </li>
+    </ul>
+    <div>
+      <h4 class="navbar-text">{{ metadata.name }}</h4>
+      <h6 v-if="docTags">
+        <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
+      </h6>
+    </div>
+  </nav>
   <div style="text-align: center;">
-    <h1>{{ metadata.name }}</h1>
-    <h3 v-if="metadata.path" class="text-muted">/ {{ metadata.path.join(" / ") }}</h3>
-    <h5 v-if="docTags">
-      <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
-    </h5>
-    <button v-on:click="save">Save</button>
     <div id="codeEditor" ref="codeEditor">
     </div>
     <div id="message">
@@ -29,6 +41,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -43,7 +56,7 @@ import 'codemirror-minified/mode/gfm/gfm'
 $('.alert').alert()
 
 function getTags (text) {
-  var re = /[^\n#]#([a-zA-Z_-]+)/g
+  var re = /[^\n\S#]#([a-zA-Z_-]+)/g
   var m
 
   var tags = []
@@ -179,7 +192,12 @@ export default {
   text-decoration: line-through;
 }
 
+a.nav-link {
+  cursor: pointer;
+}
+
 #codeEditor {
+  margin-top: 0.7em;
   text-align: left;
 }
 
@@ -203,6 +221,10 @@ export default {
 
 #inner-message-danger {
   margin: 0 auto;
+}
+
+.logo {
+  height: 2rem;
 }
 </style>
 

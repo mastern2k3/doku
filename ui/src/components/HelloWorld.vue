@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container container-main">
     <div class="row" style="margin-bottom: 1rem;">
       <div class="col-2">
         <img class="logo" src="../assets/logo.png">
@@ -84,6 +84,10 @@ export default {
 </script>
 
 <style scoped>
+.container-main {
+  margin-top: 60px;
+}
+
 .card-document {
   text-align: center;
 }
