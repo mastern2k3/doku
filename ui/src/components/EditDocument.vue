@@ -7,13 +7,16 @@
     </a>
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
-        <a class="nav-link" v-on:click="save">Save</a>
+        <a href="javascript:void(0)" v-on:click="save" class="nav-link">Save</a>
       </li>
     </ul>
     <div>
       <h4 class="navbar-text">{{ metadata.name }}</h4>
-      <h6 v-if="docTags">
-        <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
+      <h6>
+        <a href="javascript:void(0)" ref="pluginsButton" class="doctag badge badge-secondary" data-toggle="popover" title="Plugins" data-placement="left">@</a>
+        <span ref="lolwat" v-if="docTags">
+          <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
+        </span>
       </h6>
     </div>
   </nav>
@@ -76,6 +79,7 @@ export default {
   name: 'EditDocument',
   data () {
     return {
+      docId: this.$route.params.docId,
       document: '',
       metadata: {},
       plugins: {}
@@ -83,10 +87,10 @@ export default {
   },
   computed: {
     docTags: function () {
-      if (!this.plugins.tags) return null
+      if (!this.plugins.hashtags) return null
 
-      const committed = _.uniq(_.flatten(_.values(this.plugins.tags.committed)))
-      const staged = _.uniq(_.flatten(_.values(this.plugins.tags.staged)))
+      const committed = _.uniq(_.flatten(_.values(this.plugins.hashtags.committed)))
+      const staged = _.uniq(_.flatten(_.values(this.plugins.hashtags.staged)))
 
       const removed = _.difference(committed, staged)
       const added = _.difference(staged, committed)
@@ -96,12 +100,14 @@ export default {
     }
   },
   methods: {
-    save: function () {
+    save () {
       const saveTimeGeneration = this.cm.changeGeneration()
 
-      axios.post(`/api/docs/${this.$route.params.docId}/save`, this.cm.getValue())
+      axios.post(`/api/docs/${this.docId}/save`, this.cm.getValue())
         .then(response => {
           this.cleanGeneration = saveTimeGeneration
+
+          this.getDetails()
 
           $('#inner-message').addClass('show')
           setTimeout(() => {
@@ -113,23 +119,50 @@ export default {
 
           console.error(e)
         })
+    },
+    pluginsClick: function () {
+      if (!this.metadata.metadata) {
+        return ''
+      }
+
+      const c = document.createElement('h6')
+
+      _.keys(this.metadata.metadata).forEach(p => {
+        const n = document.createElement('a')
+        n.innerHTML = '@' + p
+        n.className = 'doctag badge badge-secondary'
+        n.setAttribute('href', 'javascript:void(0)')
+
+        c.appendChild(n)
+      })
+
+      return c
+    },
+    getDetails () {
+      return axios.get(`/api/docs/${this.docId}`)
+        .then(response => {
+          this.metadata = response.data
+          this.$set(this.plugins.hashtags, 'committed', this.metadata.metadata.hashtags.tags)
+          document.title = this.metadata.name
+        })
+        .catch(console.error)
     }
   },
   created () {
-    _.defer(axios.post, `/api/docs/${this.$route.params.docId}/visit`)
+    _.defer(axios.post, `/api/docs/${this.docId}/visit`)
 
-    axios.get(`/api/docs/${this.$route.params.docId}`)
-      .then(response => {
-        this.metadata = response.data
-        document.title = this.metadata.name
-      })
-      .catch(console.error)
+    this.$set(this.plugins, 'hashtags', {})
 
-    axios.get(`/api/docs/${this.$route.params.docId}/raw`)
+    this.getDetails()
+
+    const self = this
+
+    $(function () { $(self.$refs.pluginsButton).popover({ content: self.pluginsClick, html: true }) })
+
+    axios.get(`/api/docs/${this.docId}/raw`)
       .then(response => {
         this.document = response.data
 
-        const self = this
         CodeMirror.commands.save = function (insance) {
           self.save()
         }
@@ -157,11 +190,12 @@ export default {
         this.cm.on('changes', (cm, changes) => {
           changes.forEach(change => {
             cm.eachLine(change.from.line, change.to.line + 1, handle => {
-              if (!(handle.lineNo() in this.plugins.tags.staged)) {
-                this.$set(this.plugins.tags.staged, handle.lineNo(), getTags(handle.text))
+              const tags = getTags(handle.text)
+              if (!(handle.lineNo() in this.plugins.hashtags.staged)) {
+                this.$set(this.plugins.hashtags.staged, handle.lineNo(), tags)
               } else {
-                if (!_.isEqual(this.plugins.tags.staged[handle.lineNo()], getTags(handle.text))) {
-                  this.plugins.tags.staged[handle.lineNo()] = getTags(handle.text)
+                if (!_.isEqual(this.plugins.hashtags.staged[handle.lineNo()], tags)) {
+                  this.plugins.hashtags.staged[handle.lineNo()] = tags
                 }
               }
             })
@@ -169,13 +203,15 @@ export default {
         })
 
         _.defer(() => {
-          const committed = {}
+          const staged = {}
+
           this.cm.eachLine(handle => {
             const tags = getTags(handle.text)
             if (_.isEmpty(tags)) return
-            committed[handle.lineNo()] = tags
+            staged[handle.lineNo()] = tags
           })
-          this.$set(this.plugins, 'tags', { committed: committed, staged: _.cloneDeep(committed) })
+
+          this.$set(this.plugins.hashtags, 'staged', staged)
         })
       })
       .catch(console.error)

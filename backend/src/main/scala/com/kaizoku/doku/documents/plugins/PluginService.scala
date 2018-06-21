@@ -38,7 +38,7 @@ class PluginService(metadataDao: PluginMetadataDao, plugins: List[DocumentPlugin
   val pluginSet = plugins.map(p => (p, configOf(p.uniqueName)))
 
   private def configOf(name: PluginName): PluginConfiguration =
-    if (name.equals("hashtag")) PluginConfiguration(true) else PluginConfiguration(false)
+    if (name.equals("hashtags")) PluginConfiguration(true) else PluginConfiguration(false)
 
   private def getMentions(body: DocumentBody): Iterator[PluginMention] =
     for (m <- mention.findAllMatchIn(body)) yield PluginMention(m.group(1), m.group(2))

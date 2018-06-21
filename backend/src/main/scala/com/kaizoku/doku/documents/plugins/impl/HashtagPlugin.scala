@@ -14,7 +14,7 @@ class HashtagPlugin extends DocumentPlugin with StrictLogging {
 
   val hashtag = raw"(?m)[^\n\S#]#([a-zA-Z_-]+)".r
 
-  def uniqueName = "hashtag"
+  def uniqueName = "hashtags"
 
   def process(
       doc: DocumentDetails,
