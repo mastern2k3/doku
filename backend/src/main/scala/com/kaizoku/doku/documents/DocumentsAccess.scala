@@ -3,6 +3,7 @@ package com.kaizoku.doku.documents
 import java.util.UUID
 import java.util.regex.Pattern
 import java.nio.file._
+import java.io.{File, FileOutputStream}
 import java.nio.file.attribute._
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -10,6 +11,7 @@ import java.security.MessageDigest
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
+import com.kaizoku.doku.common.FutureHelpers._
 import com.kaizoku.doku.documents.sources.Base64Url
 import com.kaizoku.doku.documents.plugins.PluginService
 
@@ -56,6 +58,8 @@ trait DocumentProvider {
   def getBody(docId: DocumentId): Future[Option[DocumentBody]]
 
   def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit]
+
+  def createNew(name: String): Future[DocumentDetails]
 }
 
 class DocumentService(docProviders: List[DocumentProvider])(implicit ec: ExecutionContext) {
@@ -77,6 +81,9 @@ class DocumentService(docProviders: List[DocumentProvider])(implicit ec: Executi
 
   def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit] =
     docProviders.head.saveBody(docId, newBody)
+
+  def createNew(name: String): Future[DocumentDetails] =
+    docProviders.head.createNew(name)
 }
 
 case class LocalFileDocumentDetails(
@@ -95,7 +102,7 @@ class LocalDirectoryDocumentProvider(
 
   private val allFiles = getAllFiles(rootPath)
 
-  private val allDocuments = allFiles.map(_.filter(isMdFile).map(pathToDocumentDetails).toList)
+  private var allDocuments = allFiles.map(_.filter(isMdFile).map(pathToDocumentDetails).toList)
 
   private def wholeFile(path: Path): Future[String] =
     Future(new String(Files.readAllBytes(path), StandardCharsets.UTF_8))
@@ -107,7 +114,7 @@ class LocalDirectoryDocumentProvider(
 
   private def pathToDocumentDetails(path: Path) = {
 
-    val relPath = path.getParent.toString.replaceFirst("^" + Pattern.quote(rootPath) + "\\\\", "").replace("\\", "/");
+    val relPath = path.getParent.toString.replaceFirst("^" + Pattern.quote(rootPath), "").replace("\\", "/");
 
     val hintName = (relPath.split("/") :+ (path.getFileName.toString)).mkString(".")
 
@@ -150,4 +157,17 @@ class LocalDirectoryDocumentProvider(
         )
       )
       .map(t => Unit)
+
+  def createNew(name: String): Future[DocumentDetails] = {
+
+    val f = new File(Paths.get(rootPath).toFile, name + "." + Base64Url.encode(UUID.randomUUID()))
+
+    new FileOutputStream(f).close()
+
+    val n = pathToDocumentDetails(f.toPath)
+
+    allDocuments = allDocuments.map(f => n :: f)
+
+    Future(n)
+  }
 }

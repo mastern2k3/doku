@@ -69,7 +69,7 @@ trait DependencyWiring extends StrictLogging {
 
   lazy val documentProviders =
     List(
-      new LocalDirectoryDocumentProvider("C:\\Users\\Nitzanz\\Dropbox\\Projects", pluginService)(
+      new LocalDirectoryDocumentProvider("/home/nitzan/Dropbox/Projects/", pluginService)(
         serviceExecutionContext
       )
     )

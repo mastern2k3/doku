@@ -36,7 +36,12 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
   val documentsRoutes = pathPrefix("docs") {
     pathEndOrSingleSlash {
-      allDocuments
+      get {
+        allDocuments
+      } ~
+        put {
+          complete(documentService.createNew("lols").map(detailsMetadataToJson(_, None)))
+        }
     } ~
       pathPrefix(Segment.repeat(1, separator = Slash)) { str =>
         pathEndOrSingleSlash {

@@ -5,11 +5,15 @@
       <img class="logo" src="../assets/logo.png">
       Doku
     </a>
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
+    <div class="navbar-nav mr-auto">
         <a href="javascript:void(0)" v-on:click="save" class="nav-link">Save</a>
-      </li>
-    </ul>
+        <div class="input-group input-group-sm mb-5">
+          <input v-model="newDocName" type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2">
+          <div class="input-group-append">
+            <button v-on:click="newDoc" class="btn btn-success" type="button" >new</button>
+          </div>
+        </div>
+    </div>
     <div>
       <h4 class="navbar-text">{{ metadata.name }}</h4>
       <h6>
@@ -19,7 +23,8 @@
         </span>
       </h6>
     </div>
-  </nav>
+  </nav>    
+
   <div style="text-align: center;">
     <div id="codeEditor" ref="codeEditor">
     </div>
@@ -99,7 +104,19 @@ export default {
       return { added: added, removed: removed, unchanged: unchanged }
     }
   },
+  beforeRouteUpdate (to, from, next) {
+    this.getDetails()
+    this.$forceUpdate()
+    next()
+  },
   methods: {
+    newDoc () {
+      const self = this
+      axios.put(`/api/docs`, { name: this.newDocName })
+        .then(response => {
+          self.$router.push({path: `/doc/${response.data.id}`})
+        })
+    },
     save () {
       const saveTimeGeneration = this.cm.changeGeneration()
 
