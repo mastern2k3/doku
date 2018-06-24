@@ -76,7 +76,7 @@ class DocumentService(docProviders: List[DocumentProvider])(implicit ec: Executi
     Future.find(docProviders.map(_.getBody(docId)))(d => !d.isEmpty).map(_.flatten).flatMap(failNotFound)
 
   def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit] =
-    Future.failed(new Exception("Fuck you"))
+    docProviders.head.saveBody(docId, newBody)
 }
 
 case class LocalFileDocumentDetails(
@@ -99,12 +99,6 @@ class LocalDirectoryDocumentProvider(
 
   private def wholeFile(path: Path): Future[String] =
     Future(new String(Files.readAllBytes(path), StandardCharsets.UTF_8))
-
-  private def op2ei[A](e: Option[A]): Try[A] =
-    e match {
-      case Some(item) => Success(item)
-      case None       => Failure(new Exception("Entity not found"))
-    }
 
   private def of2fo[T](o: Option[Future[T]]): Future[Option[T]] =
     o.map(_.map(Some(_))).getOrElse(Future.successful(None))
