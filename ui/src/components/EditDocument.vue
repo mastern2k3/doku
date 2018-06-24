@@ -14,7 +14,7 @@
       <h4 class="navbar-text">{{ metadata.name }}</h4>
       <h6>
         <a href="javascript:void(0)" ref="pluginsButton" class="doctag badge badge-secondary" data-toggle="popover" title="Plugins" data-placement="left">@</a>
-        <span ref="lolwat" v-if="docTags">
+        <span v-if="docTags">
           <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
         </span>
       </h6>

@@ -8,7 +8,7 @@ import com.kaizoku.doku.passwordreset.application.{PasswordResetCodeDao, Passwor
 import com.kaizoku.doku.user.application.{RefreshTokenStorageImpl, RememberMeTokenDao, UserDao, UserService}
 import com.kaizoku.doku.documents.plugins.{PluginMetadataDao, PluginService}
 import com.kaizoku.doku.documents.plugins.impl.{HashtagPlugin}
-import com.kaizoku.doku.documents.LocalDirectoryDocumentProvider
+import com.kaizoku.doku.documents.{DocumentService, LocalDirectoryDocumentProvider}
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.StrictLogging
 
@@ -67,8 +67,14 @@ trait DependencyWiring extends StrictLogging {
 
   lazy val pluginService = new PluginService(pluginDao, plugins)(serviceExecutionContext)
 
-  lazy val documentService =
-    new LocalDirectoryDocumentProvider("C:\\Users\\Nitzanz\\Dropbox\\Projects", pluginService)(serviceExecutionContext)
+  lazy val documentProviders =
+    List(
+      new LocalDirectoryDocumentProvider("C:\\Users\\Nitzanz\\Dropbox\\Projects", pluginService)(
+        serviceExecutionContext
+      )
+    )
+
+  lazy val documentService = new DocumentService(documentProviders)(serviceExecutionContext)
 
   lazy val refreshTokenStorage = new RefreshTokenStorageImpl(rememberMeTokenDao, system)(serviceExecutionContext)
 }

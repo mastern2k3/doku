@@ -27,7 +27,7 @@ trait DocumentPlugin {
 class PluginService(metadataDao: PluginMetadataDao, plugins: List[DocumentPlugin])(implicit val ec: ExecutionContext)
     extends StrictLogging {
 
-  /*, pluginConfig: Array[PluginConfiguration]*/
+  /*, pluginConfig: Array[PluginConfiguration] */
   import io.circe.syntax._
   import io.circe.jawn.decode
 
