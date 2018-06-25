@@ -23,8 +23,7 @@
         </span>
       </h6>
     </div>
-  </nav>    
-
+  </nav>
   <div style="text-align: center;">
     <div id="codeEditor" ref="codeEditor">
     </div>
@@ -84,10 +83,11 @@ export default {
   name: 'EditDocument',
   data () {
     return {
-      docId: this.$route.params.docId,
+      docId: null,
       document: '',
       metadata: {},
-      plugins: {}
+      plugins: {},
+      newDocName: ''
     }
   },
   computed: {
@@ -105,8 +105,7 @@ export default {
     }
   },
   beforeRouteUpdate (to, from, next) {
-    this.getDetails()
-    this.$forceUpdate()
+    this.loadDoc(to.params.docId)
     next()
   },
   methods: {
@@ -159,79 +158,98 @@ export default {
       return axios.get(`/api/docs/${this.docId}`)
         .then(response => {
           this.metadata = response.data
-          this.$set(this.plugins.hashtags, 'committed', this.metadata.metadata.hashtags.tags)
           document.title = this.metadata.name
+          if (this.metadata.metadata && this.metadata.metadata.hashtags) {
+            this.$set(this.plugins.hashtags, 'committed', this.metadata.metadata.hashtags.tags)
+          }
+        })
+        .catch(console.error)
+    },
+    loadDoc (docId) {
+      this.docId = docId
+
+      this.$set(this.plugins, 'hashtags', {})
+
+      this.getDetails()
+
+      axios.get(`/api/docs/${this.docId}/raw`)
+        .then(response => {
+          this.document = response.data
+
+          if (this.cm) {
+            this.cm.setValue(this.document)
+            this.cm.refresh()
+          }
+
+          this.cleanGeneration = this.cm.changeGeneration()
+
+          _.defer(() => {
+            const staged = {}
+
+            this.cm.eachLine(handle => {
+              const tags = getTags(handle.text)
+              if (_.isEmpty(tags)) return
+              staged[handle.lineNo()] = tags
+            })
+
+            this.$set(this.plugins.hashtags, 'staged', staged)
+          })
         })
         .catch(console.error)
     }
   },
   created () {
-    _.defer(axios.post, `/api/docs/${this.docId}/visit`)
+    // _.defer(axios.post, `/api/docs/${this.docId}/visit`)
 
-    this.$set(this.plugins, 'hashtags', {})
+    window.onbeforeunload = function (e) {
+      if (this.cm.isClean(this.cleanGeneration)) {
+        return null
+      }
 
-    this.getDetails()
+      const dialogText = 'You have some unsaved changes. Click "Save" or press "Ctrl-S" in order to save your changes.'
 
+      e.returnValue = dialogText
+
+      return dialogText
+    }
+
+    this.loadDoc(this.$route.params.docId)
+  },
+  mounted () {
     const self = this
 
     $(function () { $(self.$refs.pluginsButton).popover({ content: self.pluginsClick, html: true }) })
 
-    axios.get(`/api/docs/${this.docId}/raw`)
-      .then(response => {
-        this.document = response.data
+    CodeMirror.commands.save = function (insance) {
+      self.save()
+    }
 
-        CodeMirror.commands.save = function (insance) {
-          self.save()
+    this.cm = CodeMirror(this.$refs.codeEditor, {
+      lineNumbers: true,
+      lineWrapping: true,
+      value: '',
+      mode: 'gfm',
+      theme: 'neo'
+    })
+
+    this.cm.on('changes', (cm, changes) => {
+      changes.forEach(change => {
+        if (self.plugins.hashtags) {
+          return
         }
 
-        this.cm = CodeMirror(this.$refs.codeEditor, {
-          lineNumbers: true,
-          lineWrapping: true,
-          value: this.document,
-          mode: 'gfm',
-          theme: 'neo'
-        })
-
-        this.cleanGeneration = this.cm.changeGeneration()
-
-        window.onbeforeunload = function (e) {
-          if (!self.cm.isClean(self.cleanGeneration)) {
-            const dialogText = 'You have some unsaved changes. Click "Save" or press "Ctrl-S" in order to save your changes.'
-            e.returnValue = dialogText
-            return dialogText
+        cm.eachLine(change.from.line, change.to.line + 1, handle => {
+          const tags = getTags(handle.text)
+          if (!(handle.lineNo() in self.plugins.hashtags.staged)) {
+            self.$set(self.plugins.hashtags.staged, handle.lineNo(), tags)
+          } else {
+            if (!_.isEqual(self.plugins.hashtags.staged[handle.lineNo()], tags)) {
+              self.plugins.hashtags.staged[handle.lineNo()] = tags
+            }
           }
-
-          return null
-        }
-
-        this.cm.on('changes', (cm, changes) => {
-          changes.forEach(change => {
-            cm.eachLine(change.from.line, change.to.line + 1, handle => {
-              const tags = getTags(handle.text)
-              if (!(handle.lineNo() in this.plugins.hashtags.staged)) {
-                this.$set(this.plugins.hashtags.staged, handle.lineNo(), tags)
-              } else {
-                if (!_.isEqual(this.plugins.hashtags.staged[handle.lineNo()], tags)) {
-                  this.plugins.hashtags.staged[handle.lineNo()] = tags
-                }
-              }
-            })
-          })
-        })
-
-        _.defer(() => {
-          const staged = {}
-
-          this.cm.eachLine(handle => {
-            const tags = getTags(handle.text)
-            if (_.isEmpty(tags)) return
-            staged[handle.lineNo()] = tags
-          })
-
-          this.$set(this.plugins.hashtags, 'staged', staged)
         })
       })
-      .catch(console.error)
+    })
   }
 }
 </script>

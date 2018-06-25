@@ -116,7 +116,7 @@ class LocalDirectoryDocumentProvider(
 
     val relPath = path.getParent.toString.replaceFirst("^" + Pattern.quote(rootPath), "").replace("\\", "/");
 
-    val hintName = (relPath.split("/") :+ (path.getFileName.toString)).mkString(".")
+    val hintName = (relPath.split("/").filter(!_.isEmpty) :+ (path.getFileName.toString)).mkString(".")
 
     LocalFileDocumentDetails(
       Base64Url.encode(md5(hintName)),
