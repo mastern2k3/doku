@@ -1,27 +1,40 @@
 <template>
   <div>
-  <nav class="navbar sticky-top navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-sm sticky-top navbar-dark bg-dark">
     <a class="navbar-brand" href="/">
       <img class="logo" src="../assets/logo.png">
       Doku
     </a>
-    <div class="navbar-nav mr-auto">
-        <a href="javascript:void(0)" v-on:click="save" class="nav-link">Save</a>
-        <div class="input-group input-group-sm mb-5">
-          <input v-model="newDocName" type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2">
-          <div class="input-group-append">
-            <button v-on:click="newDoc" class="btn btn-success" type="button" >new</button>
-          </div>
-        </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarToggler">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="javascript:void(0)" v-on:click="save" class="nav-link">Save</a>
+        </li>
+        <li class="nav-item">
+          <form class="form-inline">
+            <div class="input-group input-group">
+              <input v-model="newDocName" type="text" class="form-control" placeholder="New document name" aria-label="New document name">
+              <div class="input-group-append">
+                <button v-on:click="newDoc" class="btn btn-success" type="button" >new</button>
+              </div>
+            </div>
+          </form>
+        </li>
+      </ul>
     </div>
-    <div>
-      <h4 class="navbar-text">{{ metadata.name }}</h4>
-      <h6>
-        <a href="javascript:void(0)" ref="pluginsButton" class="doctag badge badge-secondary" data-toggle="popover" title="Plugins" data-placement="left">@</a>
-        <span v-if="docTags">
-          <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}*</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
-        </span>
-      </h6>
+    <div class="navbar-text">
+      <h4>{{ metadata.name }}</h4>
+      <div style="">
+        <h6>
+          <a href="javascript:void(0)" ref="pluginsButton" class="doctag badge badge-secondary" data-toggle="popover" title="Plugins" data-placement="left">@</a>
+          <span v-if="docTags">
+            <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}*</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
+          </span>
+        </h6>
+      </div>
     </div>
   </nav>
   <div style="text-align: center;">
@@ -31,8 +44,8 @@
       <div style="padding: 5px;">
         <div id="inner-message" class="alert alert-success alert-dismissible fade" role="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-  <span aria-hidden="true">&times;</span>
-</button>
+            <span aria-hidden="true">&times;</span>
+          </button>
           Saved!
         </div>
       </div>
@@ -41,14 +54,14 @@
       <div style="padding: 5px;">
         <div id="inner-message-danger" class="alert alert-danger alert-dismissible fade" role="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-  <span aria-hidden="true">&times;</span>
-</button>
+            <span aria-hidden="true">&times;</span>
+          </button>
           Error while saving :(
         </div>
       </div>
     </div>
   </div>
-</div>
+  </div>
 </template>
 
 <script>
@@ -201,7 +214,7 @@ export default {
   created () {
     // _.defer(axios.post, `/api/docs/${this.docId}/visit`)
 
-    window.onbeforeunload = function (e) {
+    window.onbeforeunload = e => {
       if (this.cm.isClean(this.cleanGeneration)) {
         return null
       }
@@ -326,6 +339,17 @@ a.nav-link {
 
 .CodeMirror .cm-property + .cm-variable-2  {
   text-decoration: line-through;
+}
+
+.CodeMirror .cm-link {
+  background-position: center right;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(transparent,transparent),url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22%3E %3Cpath fill=%22%23fff%22 stroke=%22%23333%22 d=%22M1.5 4.518h5.982V10.5H1.5z%22/%3E %3Cpath fill=%22%23333%22 d=%22M5.765 1H11v5.39L9.427 7.937l-1.31-1.31L5.393 9.35l-2.69-2.688 2.81-2.808L4.2 2.544z%22/%3E %3Cpath fill=%22%23fff%22 d=%22M9.995 2.004l.022 4.885L8.2 5.07 5.32 7.95 4.09 6.723l2.882-2.88-1.85-1.852z%22/%3E %3C/svg%3E");
+  padding-right: 13px;
+}
+
+.CodeMirror .cm-quote.cm-quote-1 {
+  background-color: #E0E3DA;
 }
 
 .CodeMirror-cursor {

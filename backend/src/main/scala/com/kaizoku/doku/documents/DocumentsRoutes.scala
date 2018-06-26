@@ -26,7 +26,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
 
-  implicit val documentJsonCbs = CanBeSerialized[DocumentInfoJson]
+  implicit val documentInfoJsonCbs   = CanBeSerialized[DocumentInfoJson]
+  implicit val documentCreateJsonCbs = CanBeSerialized[DocumentCreateJson]
 
   def documentService: DocumentService
   def pluginService: PluginService
@@ -40,7 +41,9 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
         allDocuments
       } ~
         put {
-          complete(documentService.createNew("lols").map(detailsMetadataToJson(_, None)))
+          entity(as[DocumentCreateJson]) { req =>
+            complete(documentService.createNew(req.name).map(detailsMetadataToJson(_, None)))
+          }
         }
     } ~
       pathPrefix(Segment.repeat(1, separator = Slash)) { str =>
@@ -100,4 +103,9 @@ case class DocumentInfoJson(
     @(ApiModelProperty @field)(value = "Document id") id: String,
     @(ApiModelProperty @field)(value = "Document name") name: String,
     @(ApiModelProperty @field)(value = "Plugin metadata") metadata: Option[PluginMetadata]
+)
+
+@ApiModel(description = "New document creation details")
+case class DocumentCreateJson(
+    @(ApiModelProperty @field)(value = "Desired name") name: String
 )
