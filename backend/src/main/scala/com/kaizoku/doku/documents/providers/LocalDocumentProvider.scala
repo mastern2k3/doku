@@ -101,7 +101,8 @@ class LocalDocumentProvider(rootPath: String)(implicit ec: ExecutionContext) ext
 
   def createNew(name: String): Future[DocumentDetails] = {
 
-    val f = new File(Paths.get(rootPath).toFile, name + "." + Base64Url.encode(UUID.randomUUID()).substring(0, 5))
+    val f =
+      new File(Paths.get(rootPath).toFile, name + "." + Base64Url.encode(UUID.randomUUID()).substring(0, 5) + ".md")
 
     new FileOutputStream(f).close()
 

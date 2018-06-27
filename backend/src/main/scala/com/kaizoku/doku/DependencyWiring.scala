@@ -70,9 +70,7 @@ trait DependencyWiring extends StrictLogging {
 
   lazy val documentProviders =
     List(
-      new LocalDocumentProvider(config.localProviderFolder)(
-        serviceExecutionContext
-      )
+      new LocalDocumentProvider(config.localProviderFolder)(serviceExecutionContext)
     )
 
   lazy val documentService = new DocumentService(documentProviders, pluginService)(serviceExecutionContext)

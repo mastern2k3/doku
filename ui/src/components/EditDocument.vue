@@ -324,10 +324,12 @@ a.nav-link {
 
 .CodeMirror .cm-header-1 {
   font-size: 2.5em;
+  border-bottom: dashed 0.1em #28a745;
 }
 
 .CodeMirror .cm-header-2 {
   font-size: 1.7em;
+  border-bottom: dashed 0.1em #28a745;
 }
 
 .CodeMirror .cm-header-3 {
