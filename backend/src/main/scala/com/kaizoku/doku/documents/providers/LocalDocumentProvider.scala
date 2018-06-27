@@ -1,19 +1,17 @@
-package com.kaizoku.doku.documents
+package com.kaizoku.doku.documents.providers
 
-import java.util.UUID
-import java.util.regex.Pattern
-import java.nio.file._
 import java.io.{File, FileOutputStream}
-import java.nio.file.attribute._
 import java.nio.charset.StandardCharsets
+import java.nio.file._
+import java.nio.file.attribute._
 import java.security.MessageDigest
+import java.util.regex.Pattern
+import java.util.UUID
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-import com.kaizoku.doku.common.FutureHelpers._
-import com.kaizoku.doku.documents.sources.Base64Url
-import com.kaizoku.doku.documents.plugins.PluginService
+import com.kaizoku.doku.documents._
 
 class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] {
 
@@ -34,69 +32,13 @@ class TraversePath(path: Path) extends Traversable[(Path, BasicFileAttributes)] 
   }
 }
 
-trait DocumentDetails {
-  def id: DocumentId
-  def name: String
-}
-
-abstract class DocumentProviderStatus
-
-case class OkStatus()                    extends DocumentProviderStatus
-case class ErrorStatus(error: Throwable) extends DocumentProviderStatus
-case class InitStatus()                  extends DocumentProviderStatus
-
-trait DocumentProvider {
-
-  def uniqueName: String
-
-  def status: DocumentProviderStatus
-
-  def get(docId: DocumentId): Future[Option[DocumentDetails]]
-
-  def getAll: Future[List[DocumentDetails]]
-
-  def getBody(docId: DocumentId): Future[Option[DocumentBody]]
-
-  def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit]
-
-  def createNew(name: String): Future[DocumentDetails]
-}
-
-class DocumentService(docProviders: List[DocumentProvider])(implicit ec: ExecutionContext) {
-
-  private def failNotFound[A](e: Option[A]): Future[A] =
-    e match {
-      case Some(item) => Future.successful(item)
-      case None       => Future.failed(new Exception("Entity not found"))
-    }
-
-  def get(docId: DocumentId): Future[DocumentDetails] =
-    Future.find(docProviders.map(_.get(docId)))(d => !d.isEmpty).map(_.flatten).flatMap(failNotFound)
-
-  def getAll: Future[List[DocumentDetails]] =
-    Future.sequence(docProviders.map(_.getAll)).map(_.flatten)
-
-  def getBody(docId: DocumentId): Future[DocumentBody] =
-    Future.find(docProviders.map(_.getBody(docId)))(d => !d.isEmpty).map(_.flatten).flatMap(failNotFound)
-
-  def saveBody(docId: DocumentId, newBody: DocumentBody): Future[Unit] =
-    docProviders.head.saveBody(docId, newBody)
-
-  def createNew(name: String): Future[DocumentDetails] =
-    docProviders.head.createNew(name)
-}
-
 case class LocalFileDocumentDetails(
     override val id: DocumentId,
     override val name: String,
     val localPath: Path
 ) extends DocumentDetails
 
-class LocalDirectoryDocumentProvider(
-    rootPath: String,
-    pluginService: PluginService
-)(implicit ec: ExecutionContext)
-    extends DocumentProvider {
+class LocalDocumentProvider(rootPath: String)(implicit ec: ExecutionContext) extends DocumentProvider {
 
   private def getAllFiles(rootFolder: String) = Future(new TraversePath(Paths.get(rootFolder)).map(_._1).toList)
 
@@ -151,7 +93,6 @@ class LocalDirectoryDocumentProvider(
         _.map(
           details =>
             for {
-              _ <- pluginService.process(details, newBody)
               _ <- Future(Files.write(details.localPath, newBody.getBytes(StandardCharsets.UTF_8)))
             } yield Unit
         )
@@ -160,7 +101,7 @@ class LocalDirectoryDocumentProvider(
 
   def createNew(name: String): Future[DocumentDetails] = {
 
-    val f = new File(Paths.get(rootPath).toFile, name + "." + Base64Url.encode(UUID.randomUUID()))
+    val f = new File(Paths.get(rootPath).toFile, name + "." + Base64Url.encode(UUID.randomUUID()).substring(0, 5))
 
     new FileOutputStream(f).close()
 

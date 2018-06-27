@@ -214,17 +214,22 @@ export default {
   created () {
     // _.defer(axios.post, `/api/docs/${this.docId}/visit`)
 
-    window.onbeforeunload = e => {
+    window.onbeforeunload = event => {
       if (this.cm.isClean(this.cleanGeneration)) {
         return null
       }
-
       const dialogText = 'You have some unsaved changes. Click "Save" or press "Ctrl-S" in order to save your changes.'
-
-      e.returnValue = dialogText
-
+      event.returnValue = dialogText
       return dialogText
     }
+
+    $(window).bind('keydown', event => {
+      if ((event.ctrlKey || event.metaKey) &&
+          String.fromCharCode(event.which).toLowerCase() === 's') {
+        event.preventDefault()
+        this.save()
+      }
+    })
 
     this.loadDoc(this.$route.params.docId)
   },
@@ -247,7 +252,7 @@ export default {
 
     this.cm.on('changes', (cm, changes) => {
       changes.forEach(change => {
-        if (self.plugins.hashtags) {
+        if (!self.plugins.hashtags.staged) {
           return
         }
 
@@ -322,7 +327,7 @@ a.nav-link {
 }
 
 .CodeMirror .cm-header-2 {
-  font-size: 2em;
+  font-size: 1.7em;
 }
 
 .CodeMirror .cm-header-3 {

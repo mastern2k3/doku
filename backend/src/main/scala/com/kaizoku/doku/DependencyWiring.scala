@@ -1,6 +1,8 @@
 package com.kaizoku.doku
 
 import akka.actor.ActorSystem
+import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.StrictLogging
 import com.kaizoku.doku.common.crypto.{Argon2dPasswordHashing, CryptoConfig, PasswordHashing}
 import com.kaizoku.doku.common.sql.{DatabaseConfig, SqlDatabase}
 import com.kaizoku.doku.email.application.{DummyEmailService, EmailConfig, EmailTemplatingEngine, SmtpEmailService}
@@ -8,9 +10,8 @@ import com.kaizoku.doku.passwordreset.application.{PasswordResetCodeDao, Passwor
 import com.kaizoku.doku.user.application.{RefreshTokenStorageImpl, RememberMeTokenDao, UserDao, UserService}
 import com.kaizoku.doku.documents.plugins.{PluginMetadataDao, PluginService}
 import com.kaizoku.doku.documents.plugins.impl.{HashtagPlugin}
-import com.kaizoku.doku.documents.{DocumentService, LocalDirectoryDocumentProvider}
-import com.typesafe.config.ConfigFactory
-import com.typesafe.scalalogging.StrictLogging
+import com.kaizoku.doku.documents.DocumentService
+import com.kaizoku.doku.documents.providers.{LocalDocumentProvider}
 
 trait DependencyWiring extends StrictLogging {
 
@@ -69,12 +70,12 @@ trait DependencyWiring extends StrictLogging {
 
   lazy val documentProviders =
     List(
-      new LocalDirectoryDocumentProvider("/home/nitzan/Dropbox/Projects/", pluginService)(
+      new LocalDocumentProvider(config.localProviderFolder)(
         serviceExecutionContext
       )
     )
 
-  lazy val documentService = new DocumentService(documentProviders)(serviceExecutionContext)
+  lazy val documentService = new DocumentService(documentProviders, pluginService)(serviceExecutionContext)
 
   lazy val refreshTokenStorage = new RefreshTokenStorageImpl(rememberMeTokenDao, system)(serviceExecutionContext)
 }

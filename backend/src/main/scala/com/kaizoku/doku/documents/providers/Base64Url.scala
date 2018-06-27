@@ -1,4 +1,4 @@
-package com.kaizoku.doku.documents.sources
+package com.kaizoku.doku.documents.providers
 
 import java.util.UUID
 import java.nio.ByteBuffer
@@ -9,7 +9,7 @@ object Base64Url {
 
   private[this] val encodeTable: IndexedSeq[Char] = ('A' to 'Z') ++ ('a' to 'z') ++ ('0' to '9') ++ Seq('-', '_')
   private[this] val prefix                        = Array(127, 127, 127).map(_.toByte)
-  //to force only positive BigInts
+  // to force only positive BigInts
   private[this] val paddingZeros = Array(0, 0).map(_.toByte)
   private[this] val zero         = BigInt(0)
 
