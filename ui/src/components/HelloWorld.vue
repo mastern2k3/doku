@@ -33,6 +33,7 @@
 
 <script>
 import axios from 'axios'
+import _ from 'lodash'
 
 export default {
   name: 'HelloWorld',
@@ -77,7 +78,11 @@ export default {
   methods: {
     filterSearch: function (files) {
       if (!this.searchText) return files
-      return files.filter(f => f.name.toLowerCase().includes(this.searchText.toLowerCase()))
+      const lowerCaseSearchText = this.searchText.toLowerCase()
+
+      return files.filter(f =>
+        f.name.toLowerCase().includes(lowerCaseSearchText) ||
+        _.find(_.get(f, 'metadata.hashtags.tags', []), t => t.toLowerCase().includes(lowerCaseSearchText)))
     }
   }
 }
