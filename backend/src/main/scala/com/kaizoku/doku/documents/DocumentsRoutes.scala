@@ -46,6 +46,15 @@ trait DocumentsRoutes extends RoutesSupport with DocumentsRoutesAnnotations {
           }
         }
     } ~
+      path("new") {
+        get {
+          parameters("hintName") { hintName =>
+            onSuccess(documentService.createNew(hintName)) { newDetails =>
+              redirect("/doc/" + newDetails.id, StatusCodes.Found)
+            }
+          }
+        }
+      } ~
       pathPrefix(Segment.repeat(1, separator = Slash)) { str =>
         pathEndOrSingleSlash {
           complete(for {

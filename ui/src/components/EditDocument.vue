@@ -14,14 +14,17 @@
           <a href="javascript:void(0)" v-on:click="save" class="nav-link">Save</a>
         </li>
         <li class="nav-item">
-          <form class="form-inline">
-            <div class="input-group input-group">
-              <input v-model="newDocName" type="text" class="form-control" placeholder="New document name" aria-label="New document name">
-              <div class="input-group-append">
-                <button v-on:click="newDoc" class="btn btn-success" type="button" >new</button>
-              </div>
+          <!--
+            A form could work here perfectly, waiting for reasons not to use a form..
+            <form class="form-inline">
+            </form>
+          -->
+          <div class="input-group input-group">
+            <input v-model="newDocName" type="text" class="form-control" placeholder="New document name" aria-label="New document name">
+            <div class="input-group-append">
+              <button v-on:click="newDoc" class="btn btn-success" type="button" >new</button>
             </div>
-          </form>
+          </div>
         </li>
       </ul>
     </div>
@@ -123,11 +126,9 @@ export default {
   },
   methods: {
     newDoc () {
-      const self = this
-      axios.put(`/api/docs`, { name: this.newDocName })
-        .then(response => {
-          self.$router.push({path: `/doc/${response.data.id}`})
-        })
+      const win = window.open(`/api/docs/new?hintName=${encodeURI(this.newDocName)}`, '_blank')
+      this.newDocName = ''
+      win.focus()
     },
     save () {
       const saveTimeGeneration = this.cm.changeGeneration()
@@ -234,6 +235,15 @@ export default {
     this.loadDoc(this.$route.params.docId)
   },
   mounted () {
+    function betterTab (cm) {
+      if (cm.somethingSelected()) {
+        cm.indentSelection('add')
+      } else {
+        cm.replaceSelection(cm.getOption('indentWithTabs') ? '\t'
+          : Array(cm.getOption('indentUnit') + 1).join(' '), 'end', '+input')
+      }
+    }
+
     const self = this
 
     $(function () { $(self.$refs.pluginsButton).popover({ content: self.pluginsClick, html: true }) })
@@ -245,6 +255,8 @@ export default {
     this.cm = CodeMirror(this.$refs.codeEditor, {
       lineNumbers: true,
       lineWrapping: true,
+      extraKeys: { Tab: betterTab },
+      indentUnit: 4,
       value: '',
       mode: 'gfm',
       theme: 'neo'
