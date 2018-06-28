@@ -19,12 +19,17 @@
             <form class="form-inline">
             </form>
           -->
-          <div class="input-group input-group">
-            <input v-model="newDocName" type="text" class="form-control" placeholder="New document name" aria-label="New document name">
+          <a v-show="!newDocState" href="javascript:void(0)" v-on:click="newDocInitiate" class="nav-link">New</a>
+          <div v-show="newDocState" class="input-group input-group">
+            <input v-model="newDocName" ref="newDocName" type="text" class="form-control" placeholder="New document name" aria-label="New document name">
             <div class="input-group-append">
-              <button v-on:click="newDoc" class="btn btn-success" type="button" >new</button>
+              <button v-on:click="newDoc" class="btn btn-primary" type="button">New</button>
+              <button v-on:click="newDocState = false" class="btn btn-secondary" type="button" >&times;</button>
             </div>
           </div>
+        </li>
+        <li class="nav-item">
+          <a href="javascript:void(0)" v-on:click="console.log('placeholder')" class="nav-link">Do more</a>
         </li>
       </ul>
     </div>
@@ -103,7 +108,8 @@ export default {
       document: '',
       metadata: {},
       plugins: {},
-      newDocName: ''
+      newDocName: '',
+      newDocState: false
     }
   },
   computed: {
@@ -125,9 +131,15 @@ export default {
     next()
   },
   methods: {
+    newDocInitiate () {
+      this.newDocName = ''
+      this.newDocState = true
+      this.$nextTick(() => this.$refs.newDocName.focus())
+    },
     newDoc () {
       const win = window.open(`/api/docs/new?hintName=${encodeURI(this.newDocName)}`, '_blank')
       this.newDocName = ''
+      this.newDocState = false
       win.focus()
     },
     save () {
