@@ -1,4 +1,4 @@
-package com.kaizoku.doku.documents
+package com.kaizoku.doku
 
 import io.circe.JsonObject
 

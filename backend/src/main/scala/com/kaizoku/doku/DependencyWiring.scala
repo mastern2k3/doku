@@ -8,8 +8,8 @@ import com.kaizoku.doku.common.sql.{DatabaseConfig, SqlDatabase}
 import com.kaizoku.doku.email.application.{DummyEmailService, EmailConfig, EmailTemplatingEngine, SmtpEmailService}
 import com.kaizoku.doku.passwordreset.application.{PasswordResetCodeDao, PasswordResetConfig, PasswordResetService}
 import com.kaizoku.doku.user.application.{RefreshTokenStorageImpl, RememberMeTokenDao, UserDao, UserService}
-import com.kaizoku.doku.documents.plugins.{PluginMetadataDao, PluginService}
-import com.kaizoku.doku.documents.plugins.impl.{HashtagPlugin}
+import com.kaizoku.doku.plugins.{PluginMetadataDao, PluginService}
+import com.kaizoku.doku.plugins.impl.{HashtagPlugin}
 import com.kaizoku.doku.documents.DocumentService
 import com.kaizoku.doku.documents.providers.{LocalDocumentProvider}
 

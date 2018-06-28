@@ -1,4 +1,4 @@
-package com.kaizoku.doku.documents.plugins
+package com.kaizoku.doku.plugins
 
 import java.time.OffsetDateTime
 

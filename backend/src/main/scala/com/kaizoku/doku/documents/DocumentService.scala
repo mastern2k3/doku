@@ -4,7 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 import com.kaizoku.doku.common.FutureHelpers._
-import com.kaizoku.doku.documents.plugins.PluginService
+import com.kaizoku.doku.plugins.PluginService
 
 trait DocumentDetails {
   def id: DocumentId

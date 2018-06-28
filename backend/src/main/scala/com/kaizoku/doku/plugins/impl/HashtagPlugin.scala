@@ -1,4 +1,4 @@
-package com.kaizoku.doku.documents.plugins.impl
+package com.kaizoku.doku.plugins.impl
 
 import java.time.OffsetDateTime
 
@@ -8,7 +8,7 @@ import io.circe.{Json, JsonObject}
 
 import com.kaizoku.doku.common.sql.SqlDatabase
 import com.kaizoku.doku.documents._
-import com.kaizoku.doku.documents.plugins._
+import com.kaizoku.doku.plugins._
 
 class HashtagPlugin extends DocumentPlugin with StrictLogging {
 

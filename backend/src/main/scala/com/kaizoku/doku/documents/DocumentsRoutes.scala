@@ -19,7 +19,7 @@ import io.swagger.annotations.{ApiResponse, _}
 import com.kaizoku.doku.common.api.RoutesSupport
 import com.kaizoku.doku.common.FutureHelpers._
 import com.kaizoku.doku.version.BuildInfo._
-import com.kaizoku.doku.documents.plugins.{PluginMetadata, PluginService}
+import com.kaizoku.doku.plugins.{PluginMetadata, PluginService}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
