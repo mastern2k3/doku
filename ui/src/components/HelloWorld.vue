@@ -77,7 +77,7 @@ export default {
   methods: {
     filterSearch: function (files) {
       if (!this.searchText) return files
-      return files.filter(f => f.name.includes(this.searchText))
+      return files.filter(f => f.name.toLowerCase().includes(this.searchText.toLowerCase()))
     }
   }
 }

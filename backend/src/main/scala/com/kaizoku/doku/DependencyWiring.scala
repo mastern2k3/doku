@@ -11,7 +11,7 @@ import com.kaizoku.doku.user.application.{RefreshTokenStorageImpl, RememberMeTok
 import com.kaizoku.doku.plugins.{PluginMetadataDao, PluginService}
 import com.kaizoku.doku.plugins.impl.{HashtagPlugin}
 import com.kaizoku.doku.documents.DocumentService
-import com.kaizoku.doku.documents.providers.{LocalDocumentProvider}
+import com.kaizoku.doku.documents.providers.{InternalDocumentDao, InternalDocumentProvider, LocalDocumentProvider}
 
 trait DependencyWiring extends StrictLogging {
 
@@ -25,6 +25,8 @@ trait DependencyWiring extends StrictLogging {
 
   lazy val daoExecutionContext = system.dispatchers.lookup("dao-dispatcher")
 
+  lazy val sqlDatabase = SqlDatabase.create(config)
+
   lazy val userDao = new UserDao(sqlDatabase)(daoExecutionContext)
 
   lazy val codeDao = new PasswordResetCodeDao(sqlDatabase)(daoExecutionContext)
@@ -33,7 +35,7 @@ trait DependencyWiring extends StrictLogging {
 
   lazy val pluginDao = new PluginMetadataDao(sqlDatabase)(daoExecutionContext)
 
-  lazy val sqlDatabase = SqlDatabase.create(config)
+  lazy val internalDocumentDao = new InternalDocumentDao(sqlDatabase)(daoExecutionContext)
 
   lazy val serviceExecutionContext = system.dispatchers.lookup("service-dispatcher")
 
@@ -70,7 +72,8 @@ trait DependencyWiring extends StrictLogging {
 
   lazy val documentProviders =
     List(
-      new LocalDocumentProvider(config.localProviderFolder)(serviceExecutionContext)
+      new LocalDocumentProvider(config.localProviderFolder)(serviceExecutionContext),
+      new InternalDocumentProvider(internalDocumentDao)(serviceExecutionContext)
     )
 
   lazy val documentService = new DocumentService(documentProviders, pluginService)(serviceExecutionContext)
