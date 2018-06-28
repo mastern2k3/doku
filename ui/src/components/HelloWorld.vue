@@ -18,7 +18,7 @@
       <div class="card card-document" v-for="file of filterSearch(files)" v-bind:key="file.id">
         <div class="card-header">
           <h5>{{file.name}}</h5>
-          <div v-if="file.metadata && file.metadata.hashtags && file.metadata.hashtags.tags">
+          <div v-if="_get(file, 'metadata.hashtags.tags')">
             <a v-for="tag in file.metadata.hashtags.tags" v-bind:key="tag" href="http://google.com" class="doctag badge badge-primary">#{{tag}}</a>
           </div>
         </div>
@@ -48,17 +48,9 @@ export default {
       .then(response => {
         this.files = response.data
 
-        function tagsOf (file) {
-          if (file.metadata && file.metadata.hashtags && file.metadata.hashtags.tags) {
-            return file.metadata.hashtags.tags
-          } else {
-            return []
-          }
-        }
-
         this.files.sort((a, b) => {
-          const aPinned = tagsOf(a).includes('pin')
-          const bPinned = tagsOf(b).includes('pin')
+          const aPinned = _.get(a, 'metadata.hashtags.tags', []).includes('pin')
+          const bPinned = _.get(b, 'metadata.hashtags.tags', []).includes('pin')
 
           if (aPinned && !bPinned) {
             return -1
@@ -76,6 +68,7 @@ export default {
       .catch(console.error)
   },
   methods: {
+    _get: _.get,
     filterSearch: function (files) {
       if (!this.searchText) return files
       const lowerCaseSearchText = this.searchText.toLowerCase()

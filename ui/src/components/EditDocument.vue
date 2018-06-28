@@ -190,9 +190,7 @@ export default {
         .then(response => {
           this.metadata = response.data
           document.title = this.metadata.name
-          if (this.metadata.metadata && this.metadata.metadata.hashtags) {
-            this.$set(this.plugins.hashtags, 'committed', this.metadata.metadata.hashtags.tags)
-          }
+          this.$set(this.plugins.hashtags, 'committed', _.get(this.metadata, 'metadata.hashtags.tags'))
         })
         .catch(console.error)
     },
