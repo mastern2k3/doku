@@ -9,9 +9,9 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarToggler">
-      <ul class="navbar-nav">
+      <ul class="navbar-nav" style="width: 100%;">
         <li class="nav-item">
-          <a href="javascript:void(0)" v-on:click="save" class="nav-link">Save</a>
+          <a href="javascript:void(0)" v-on:click="save" class="nav-link"><ficon icon="save" /> Save</a>
         </li>
         <li class="nav-item">
           <!--
@@ -19,29 +19,34 @@
             <form class="form-inline">
             </form>
           -->
-          <a v-show="!newDocState" href="javascript:void(0)" v-on:click="newDocInitiate" class="nav-link">New</a>
+          <a v-show="!newDocState" href="javascript:void(0)" v-on:click="newDocInitiate" class="nav-link"><ficon icon="plus-square" /> New</a>
           <div v-show="newDocState" class="input-group input-group">
             <input v-model="newDocName" ref="newDocName" type="text" class="form-control" placeholder="New document name" aria-label="New document name">
             <div class="input-group-append">
               <button v-on:click="newDoc" class="btn btn-primary" type="button">New</button>
-              <button v-on:click="newDocState = false" class="btn btn-secondary" type="button" >&times;</button>
+              <button v-on:click="newDocState = false" class="btn btn-secondary" type="button"><ficon icon="ban" /></button>
             </div>
           </div>
         </li>
-        <li class="nav-item">
-          <a href="javascript:void(0)" v-on:click="console.log('placeholder')" class="nav-link">Do more</a>
+        <li class="nav-item" style="flex-grow: 1; padding-right: 1em; padding-left: 0.5em;">
+          <form class="form-inline" style="flex-grow: 1;">
+            <div class="input-group input-group" style="flex-grow: 1;">
+              <input type="text" class="form-control" placeholder="Search" aria-label="Search">
+              <div class="input-group-append">
+                <button v-on:click="newDocState = false" class="btn btn-primary" type="button"><ficon icon="search" /></button>
+              </div>
+            </div>
+          </form>
         </li>
       </ul>
     </div>
-    <div class="navbar-text">
-      <h4>{{ metadata.name }}</h4>
-      <div style="">
-        <h6>
-          <a href="javascript:void(0)" ref="pluginsButton" class="doctag badge badge-secondary" data-toggle="popover" title="Plugins" data-placement="left">@</a>
-          <span v-if="docTags">
-            <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}*</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
-          </span>
-        </h6>
+    <div class="navbar-text" style="padding-top: 0; padding-bottom: 0;">
+      <h4 class="doc-name">{{ metadata.name }}</h4>
+      <div>
+        <a href="javascript:void(0)" ref="pluginsButton" class="doctag badge badge-secondary" data-toggle="popover" title="Plugins" data-placement="left">@</a>
+        <span v-if="docTags">
+          <a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.unchanged" class="doctag badge badge-primary">#{{tag}}</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.added" class="doctag badge badge-success">#{{tag}}*</a><a href="http://google.com" v-bind:key="tag" v-for="tag of docTags.removed" class="doctag badge badge-danger">#{{tag}}</a>
+        </span>
       </div>
     </div>
   </nav>
@@ -299,6 +304,10 @@ export default {
 <style scoped>
 .doctag + .doctag {
   margin-left: 0.3em;
+}
+
+.doc-name {
+  margin-bottom: 0;
 }
 
 .badge.badge-danger {
