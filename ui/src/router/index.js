@@ -9,6 +9,6 @@ export default new Router({
   mode: 'history',
   routes: [
     { path: '/', component: HelloWorld },
-    { path: '/doc/:docId', component: EditDocument }
+    { name: 'edit_doc', path: '/doc/:docId', component: EditDocument }
   ]
 })

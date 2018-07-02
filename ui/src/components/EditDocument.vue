@@ -29,14 +29,15 @@
           </div>
         </li>
         <li class="nav-item" style="flex-grow: 1; padding-right: 1em; padding-left: 0.5em;">
-          <form class="form-inline" style="flex-grow: 1;">
+          <doc-search-bar />
+          <!-- <form class="form-inline" style="flex-grow: 1;">
             <div class="input-group input-group" style="flex-grow: 1;">
               <input type="text" class="form-control" placeholder="Search" aria-label="Search">
               <div class="input-group-append">
                 <button v-on:click="newDocState = false" class="btn btn-primary" type="button"><ficon icon="search" /></button>
               </div>
             </div>
-          </form>
+          </form> -->
         </li>
       </ul>
     </div>
@@ -132,6 +133,11 @@ export default {
     }
   },
   beforeRouteUpdate (to, from, next) {
+    if (!this.cm.isClean(this.cleanGeneration)) {
+      alert('Fuck you there are unsaved changes')
+      return
+    }
+
     this.loadDoc(to.params.docId)
     next()
   },
@@ -355,16 +361,17 @@ a.nav-link {
 
 .CodeMirror .cm-header-1 {
   font-size: 2.5em;
-  border-bottom: dashed 0.1em #28a745;
+  border-bottom: solid 0.1em #28a745;
 }
 
 .CodeMirror .cm-header-2 {
   font-size: 1.7em;
-  border-bottom: dashed 0.1em #28a745;
+  border-bottom: solid 0.1em #28a745;
 }
 
 .CodeMirror .cm-header-3 {
   font-size: 1.5em;
+  border-bottom: dashed 0.1em #28a745;
 }
 
 .CodeMirror .cm-header-4 {

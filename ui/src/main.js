@@ -4,9 +4,14 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 
+import DocSearchBar from '@/components/DocSearchBar'
+
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSearch, faSave, faPlusSquare, faBan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import VueAutosuggest from 'vue-autosuggest'
+
+Vue.use(VueAutosuggest)
 
 library.add(faSearch)
 library.add(faSave)
@@ -14,6 +19,7 @@ library.add(faPlusSquare)
 library.add(faBan)
 
 Vue.component('ficon', FontAwesomeIcon)
+Vue.component('doc-search-bar', DocSearchBar)
 
 Vue.config.productionTip = false
 
