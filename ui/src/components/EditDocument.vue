@@ -359,6 +359,10 @@ a.nav-link {
   height: auto;
 }
 
+.CodeMirror .cm-strikethrough:hover {
+  text-decoration: rgba(0,0,0,0.2) line-through;
+}
+
 .CodeMirror .cm-header-1 {
   font-size: 2.5em;
   border-bottom: solid 0.1em #28a745;
@@ -370,12 +374,12 @@ a.nav-link {
 }
 
 .CodeMirror .cm-header-3 {
-  font-size: 1.5em;
+  font-size: 1.3em;
   border-bottom: dashed 0.1em #28a745;
 }
 
 .CodeMirror .cm-header-4 {
-  font-size: 1.4em;
+  font-size: 1.2em;
 }
 
 .CodeMirror .cm-header-5 {

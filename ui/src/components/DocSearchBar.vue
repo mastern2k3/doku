@@ -1,9 +1,22 @@
 <template>
-  <vue-autosuggest
-    :suggestions="filteredDocs"
-    :renderSuggestion="renderSuggestion"
-    :onSelected="onSelected"
-    :inputProps="{id: 'autosuggest__input', onInputChange: this.onInputChange, placeholder: 'Search'}" /> <!--""-->
+<!--   <div>
+    <div class="input-group input-group" style="flex-grow: 1;">
+      <input type="text" class="form-control" placeholder="Search" aria-label="Search">
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="button"><ficon icon="search" /></button>
+      </div>
+    </div>
+    <ul>
+      <li  class="list-group-item list-group-item-action doc-suggestions"></li>
+    </ul>
+  </div> -->
+  <div class="list-group-flush">
+    <vue-autosuggest
+      :suggestions="filteredDocs"
+      :renderSuggestion="renderSuggestion"
+      :onSelected="onSelected"
+      :inputProps="{id: 'autosuggest__input', onInputChange: this.onInputChange, placeholder: 'Search'}" /> <!-- "" -->
+  </div>
   <!-- <vue-autosuggest
     :suggestions="filteredOptions"
     @focus="focusMe"
@@ -35,6 +48,7 @@ export default {
       .catch(console.error)
   },
   methods: {
+    // _empty: _.empty,
     onSelected (suggestion) {
       this.$router.push({ name: 'edit_doc', params: { docId: suggestion.item.id } })
       // Optionally open a new tab for this document:
@@ -42,7 +56,13 @@ export default {
       // window.open(routeData.href, '_blank');
     },
     renderSuggestion (suggestion) {
-      return suggestion.item.name
+      
+      const n = this.$createElement('div', { class: 'doc-suggestions' }, [suggestion.item.name])
+
+      // n.innerHTML = 
+      // n.className = 'badge badge-secondary'
+
+      return n
     },
     onInputChange (text, oldText) {
       if (text === null) {
@@ -72,13 +92,32 @@ export default {
   position: relative;
 }
 
+.autosuggest__results-container ul {
+  list-style: none;
+  padding-left: 0;
+}
+
 .autosuggest__results {
+  background-color: white;
   position: absolute;
-  background-color: powderblue;
   width: 100%;
+  border: #b7b7b7 1px solid;
+  border-bottom-right-radius: .15rem;
+  border-bottom-left-radius: .15rem;
+  padding-bottom: .rem;
 }
 
 .autosuggest__results_item-highlighted {
-  background-color: aquamarine;
+  background-color: #78ddae;
+  font-weight: bold;
+}
+
+.doc-suggestions:hover {
+  background-color: #78ddae;
+  font-weight: bold;
+}
+
+.doc-suggestions {
+  padding: .3rem .75rem
 }
 </style>
