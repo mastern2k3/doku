@@ -1,22 +1,9 @@
 <template>
-<!--   <div>
-    <div class="input-group input-group" style="flex-grow: 1;">
-      <input type="text" class="form-control" placeholder="Search" aria-label="Search">
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button"><ficon icon="search" /></button>
-      </div>
-    </div>
-    <ul>
-      <li  class="list-group-item list-group-item-action doc-suggestions"></li>
-    </ul>
-  </div> -->
-  <div class="list-group-flush">
-    <vue-autosuggest
-      :suggestions="filteredDocs"
-      :renderSuggestion="renderSuggestion"
-      :onSelected="onSelected"
-      :inputProps="{id: 'autosuggest__input', onInputChange: this.onInputChange, placeholder: 'Search'}" /> <!-- "" -->
-  </div>
+  <vue-autosuggest
+    :suggestions="filteredDocs"
+    :renderSuggestion="renderSuggestion"
+    :onSelected="onSelected"
+    :inputProps="{id: 'autosuggest__input', onInputChange: this.onInputChange, placeholder: 'Search'}" /> <!-- "" -->
   <!-- <vue-autosuggest
     :suggestions="filteredOptions"
     @focus="focusMe"
@@ -48,7 +35,6 @@ export default {
       .catch(console.error)
   },
   methods: {
-    // _empty: _.empty,
     onSelected (suggestion) {
       this.$router.push({ name: 'edit_doc', params: { docId: suggestion.item.id } })
       // Optionally open a new tab for this document:
@@ -56,13 +42,7 @@ export default {
       // window.open(routeData.href, '_blank');
     },
     renderSuggestion (suggestion) {
-      
-      const n = this.$createElement('div', { class: 'doc-suggestions' }, [suggestion.item.name])
-
-      // n.innerHTML = 
-      // n.className = 'badge badge-secondary'
-
-      return n
+      return this.$createElement('div', { class: 'doc-suggestions' }, [suggestion.item.name])
     },
     onInputChange (text, oldText) {
       if (text === null) {
