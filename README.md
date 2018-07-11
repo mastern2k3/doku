@@ -7,7 +7,7 @@
 
 * **Markdown** - Designed to present Markdown in a tidy way.
 * **Tags** - Organize and search documents using inline hashtags.
-* **Local Folder**
+* **Document Providers** - Currently able to read files from a specified folder but is designed for multiple document providers.
 
 ## Planned
 
