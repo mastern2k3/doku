@@ -306,6 +306,11 @@ export default {
 </script>
 
 <style scoped>
+nav {
+  -webkit-box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.7);
+  box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.7);
+}
+
 .doctag + .doctag {
   margin-left: 0.3em;
 }
@@ -357,6 +362,8 @@ a.nav-link {
 <style>
 .CodeMirror {
   height: auto;
+  font-size: 12px;
+  font-family: 'Cousine', monospace;
 }
 
 .CodeMirror .cm-strikethrough:hover {
