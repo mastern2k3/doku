@@ -16,6 +16,6 @@
 
 ## Screenshot
 
-<div style="text-align: center">
+<p align="center">
 <img src="assets/screenshots/screenshot0.png" alt="Doku Screenshot" width="60%" />
-</div>
+</p>
