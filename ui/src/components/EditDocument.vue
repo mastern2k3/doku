@@ -1,10 +1,9 @@
 <template>
   <div>
-  <nav class="navbar navbar-expand-sm sticky-top navbar-dark bg-dark">
-    <a class="navbar-brand" href="/">
-      <img class="logo" src="../assets/logo.png">
-      Doku
-    </a>
+  <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
+    <div class="navbar-brand">
+      <a href="/"><img class="logo" src="../assets/logo.png"></a> {{ metadata.name }}
+    </div>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -42,7 +41,7 @@
       </ul>
     </div>
     <div class="navbar-text" style="padding-top: 0; padding-bottom: 0;">
-      <h4 class="doc-name">{{ metadata.name }}</h4>
+      <!-- <h4 class="doc-name">{{ metadata.name }}</h4> -->
       <div>
         <a href="javascript:void(0)" ref="pluginsButton" class="doctag badge badge-secondary" data-toggle="popover" title="Plugins" data-placement="left">@</a>
         <span v-if="docTags">
@@ -315,8 +314,9 @@ nav {
   margin-left: 0.3em;
 }
 
-.doc-name {
-  margin-bottom: 0;
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 500;
 }
 
 .badge.badge-danger {
