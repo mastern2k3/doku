@@ -17,7 +17,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.0",
     "@fortawesome/free-solid-svg-icons": "^5.1.0",
     "@fortawesome/vue-fontawesome": "^0.1.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "codemirror-minified": "^5.37.0",
     "lodash": "^4.17.10",
     "vue": "^2.5.2",
